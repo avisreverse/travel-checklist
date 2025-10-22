@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Travel Checklist - Cloud Sync</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .setup-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+        .setup-modal.hidden { display: none; }
+        .setup-content { background: white; border-radius: 20px; padding: 40px; max-width: 600px; margin: auto; }
+        .setup-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
+        .form-input { width: 100%; padding: 10px; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 12px; margin-bottom: 12px; }
+        .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn-setup { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        .btn-setup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.4); }
+        .header-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
+        .header-title { font-size: 48px; font-weight: 800; margin-bottom: 10px; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        .card-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; }
+        .task-item { padding: 16px; background: #f9f9f9; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid #667eea; }
+        .task-title { font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
+        .task-status { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+        .task-status select, .task-status input { padding: 8px 12px; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 13px; }
+        .btn-delete { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        .stat-number { font-size: 48px; font-weight: 700; }
+        .stat-label { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 10px; }
+        .loading { text-align: center; padding: 40px; font-size: 18px; color: white; }
+        .status-msg { padding: 12px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <!-- Setup Modal -->
+    <div id="setupModal" class="setup-modal">
+        <div class="setup-content">
+            <div class="setup-title">🔧 Firebase Setup</div>
+            <p style="color: #666; margin-bottom: 20px; font-size: 13px;">Enter your Firebase config values</p>
+            
+            <input type="text" id="apiKey" class="form-input" placeholder="API Key">
+            <input type="text" id="authDomain" class="form-input" placeholder="Auth Domain">
+            <input type="text" id="databaseURL" class="form-input" placeholder="Database URL (https://xxx.firebaseio.com)">
+            <input type="text" id="projectId" class="form-input" placeholder="Project ID">
+            
+            <button class="btn-setup" onclick="connectToFirebase()">✅ Connect to Firebase</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header-container">
+        <h1 class="header-title"><i class="fas fa-plane-departure"></i> India Travel Checklist</h1>
+        <p style="margin-top: 10px; opacity: 0.9;">Cloud Synced ☁️</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-main">
+        <div id="loading" class="loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+        
+        <div id="content" style="display: none;">
+            <div id="statusMsg" class="status-msg" style="display: none;"></div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="stat-card">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label">✅ Completed</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                    <div class="stat-number" id="remainingCount">0</div>
+                    <div class="stat-label">🔄 Remaining</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">📋 Total Tasks</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📝 Travel Checklist</div>
+                <div id="tasksList"></div>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="btn-setup" onclick="showSetup()" style="max-width: 200px;">⚙️ Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let databaseURL = '';
+        let tasks = [];
+
+        function connectToFirebase() {
+            console.log('Connect button clicked');
+            
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const authDomain = document.getElementById('authDomain').value.trim();
+            const dbURL = document.getElementById('databaseURL').value.trim();
+            const projectId = document.getElementById('projectId').value.trim();
+
+            if (!apiKey || !authDomain || !dbURL || !projectId) {
+                alert('❌ Please fill all 4 required fields');
+                return;
+            }
+
+            // Extract base URL (remove trailing slash and /tasks.json if present)
+            databaseURL = dbURL.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
+            
+            console.log('Database URL set to:', databaseURL);
+
+            const config = { apiKey, authDomain, databaseURL: dbURL, projectId };
+            localStorage.setItem('firebaseConfig', JSON.stringify(config));
+
+            document.getElementById('loading').style.display = 'block';
+            
+            // Test connection
+            testConnection();
+        }
+
+        function testConnection() {
+            console.log('Testing connection to:', databaseURL + '/tasks.json');
+            
+            fetch(databaseURL + '/tasks.json')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (response.status === 401) {
+                        throw new Error('Database rules need to be fixed. Go to Firebase Console → Realtime Database → Rules and set:\n{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Connection successful!');
+                    document.getElementById('setupModal').classList.add('hidden');
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    
+                    if (data && typeof data === 'object') {
+                        tasks = Object.values(data).filter(t => t && typeof t === 'object');
+                    } else {
+                        tasks = getDefaultTasks();
+                    }
+                    
+                    displayTasks();
+                    startSyncInterval();
+                })
+                .catch(error => {
+                    console.error('Connection error:', error);
+                    alert('❌ Connection failed:\n' + error.message);
+                    document.getElementById('loading').style.display = 'none';
+                });
+        }
+
+        function getDefaultTasks() {
+            return [
+                // CRITICAL - DO THIS FIRST
+                { id: 1, title: '🔴 Verify I-94 validity for all family members', status: 'not-started', dueDate: '' },
+                { id: 2, title: '🔴 Check USCIS SEVIS database and CBP I-94 records', status: 'not-started', dueDate: '' },
+                { id: 3, title: '🔴 Apply for I-131 (Advance Parole) if I-94 expired', status: 'not-started', dueDate: '' },
+                { id: 4, title: '🔴 Confirm H1B is valid and hasn\'t expired', status: 'not-started', dueDate: '' },
+                { id: 5, title: '🔴 Confirm wife\'s and son\'s H4 validity', status: 'not-started', dueDate: '' },
+                { id: 6, title: '🔴 Verify wife\'s EAD Card is valid', status: 'not-started', dueDate: '' },
+                { id: 7, title: '🔴 Verify all passports are valid (6+ months beyond return)', status: 'not-started', dueDate: '' },
+                { id: 8, title: '🔴 Get India visa for you, wife, and son', status: 'not-started', dueDate: '' },
+                { id: 9, title: '🔴 Confirm daughter has US passport', status: 'not-started', dueDate: '' },
+                { id: 10, title: '🔴 Clarify: H1B extension or initial visa interview?', status: 'not-started', dueDate: '' },
+                { id: 11, title: '🔴 Gather employment documents (offer letter, pay stubs)', status: 'not-started', dueDate: '' },
+                { id: 12, title: '🔴 Collect I-797 approval notices', status: 'not-started', dueDate: '' },
+                { id: 13, title: '🔴 Confirm visa interview date, time, and location', status: 'not-started', dueDate: '' },
+                { id: 14, title: '🔴 Prepare interview answers and documents', status: 'not-started', dueDate: '' },
+                
+                // DOCUMENTS TO PREPARE
+                { id: 15, title: '📄 Collect all passports (valid 6+ months)', status: 'not-started', dueDate: '' },
+                { id: 16, title: '📄 Copy all stamped visa pages', status: 'not-started', dueDate: '' },
+                { id: 17, title: '📄 Print I-94 records from CBP website', status: 'not-started', dueDate: '' },
+                { id: 18, title: '📄 Collect I-797 forms (H1B and H4)', status: 'not-started', dueDate: '' },
+                { id: 19, title: '📄 Carry wife\'s original EAD card', status: 'not-started', dueDate: '' },
+                { id: 20, title: '📄 Collect birth certificates for all', status: 'not-started', dueDate: '' },
+                { id: 21, title: '📄 Get certified copy of marriage certificate', status: 'not-started', dueDate: '' },
+                { id: 22, title: '📄 Print flight tickets (6 copies)', status: 'not-started', dueDate: '' },
+                { id: 23, title: '📄 Print hotel reservations', status: 'not-started', dueDate: '' },
+                { id: 24, title: '📄 Print travel insurance policy', status: 'not-started', dueDate: '' },
+                { id: 25, title: '📄 Collect medical records and vaccination records', status: 'not-started', dueDate: '' },
+                
+                // FINANCIAL & BANKING
+                { id: 26, title: '💳 Inform banks about travel dates', status: 'not-started', dueDate: '' },
+                { id: 27, title: '💳 Get printed bank statements (3-6 months)', status: 'not-started', dueDate: '' },
+                { id: 28, title: '💳 Carry 2-3 credit cards (different companies)', status: 'not-started', dueDate: '' },
+                { id: 29, title: '💳 Exchange USD to INR', status: 'not-started', dueDate: '' },
+                { id: 30, title: '💳 Notify wife\'s employer about EAD travel', status: 'not-started', dueDate: '' },
+                
+                // EMPLOYER & WORK
+                { id: 31, title: '👔 Notify your employer of travel dates', status: 'not-started', dueDate: '' },
+                { id: 32, title: '👔 Confirm return ticket to resume work immediately', status: 'not-started', dueDate: '' },
+                { id: 33, title: '👔 Get employer letter confirming employment', status: 'not-started', dueDate: '' },
+                { id: 34, title: '👔 Wife: Notify your employer about travel', status: 'not-started', dueDate: '' },
+                { id: 35, title: '👔 Wife: Get employment letter from company', status: 'not-started', dueDate: '' },
+                
+                // SCHOOL & FAMILY
+                { id: 36, title: '📚 Get official letter from school confirming grade', status: 'not-started', dueDate: '' },
+                { id: 37, title: '📚 Collect homework/assignments for missed dates', status: 'not-started', dueDate: '' },
+                { id: 38, title: '📚 Contact school about re-entry procedures', status: 'not-started', dueDate: '' },
+                { id: 39, title: '📚 Get required immunization records', status: 'not-started', dueDate: '' },
+                
+                // HOME PREPARATION
+                { id: 40, title: '🏠 Arrange mail hold with USPS', status: 'not-started', dueDate: '' },
+                { id: 41, title: '🏠 Lock all windows and doors', status: 'not-started', dueDate: '' },
+                { id: 42, title: '🏠 Set thermostat appropriately', status: 'not-started', dueDate: '' },
+                { id: 43, title: '🏠 Ask neighbor to check on home', status: 'not-started', dueDate: '' },
+                { id: 44, title: '🏠 Take photos of valuable items for insurance', status: 'not-started', dueDate: '' },
+                
+                // MEDICAL PREPARATIONS
+                { id: 45, title: '⚕️ Refill all prescriptions', status: 'not-started', dueDate: '' },
+                { id: 46, title: '⚕️ Visit dentist for checkup', status: 'not-started', dueDate: '' },
+                { id: 47, title: '⚕️ Visit doctor for checkup', status: 'not-started', dueDate: '' },
+                { id: 48, title: '⚕️ Get doctor\'s letter for medications', status: 'not-started', dueDate: '' },
+                { id: 49, title: '⚕️ Research hospitals near India destination', status: 'not-started', dueDate: '' },
+                
+                // INDIA PREPARATIONS
+                { id: 50, title: '🇮🇳 Book accommodations (hotel/family home)', status: 'not-started', dueDate: '' },
+                { id: 51, title: '🇮🇳 Arrange transportation from airport', status: 'not-started', dueDate: '' },
+                { id: 52, title: '🇮🇳 Confirm visa interview appointment details', status: 'not-started', dueDate: '' },
+                { id: 53, title: '🇮🇳 Check weather forecast for India', status: 'not-started', dueDate: '' },
+                { id: 54, title: '🇮🇳 Get Indian phone SIM or roaming plan', status: 'not-started', dueDate: '' },
+                { id: 55, title: '🇮🇳 Notify family in India of arrival details', status: 'not-started', dueDate: '' },
+                { id: 56, title: '🇮🇳 Purchase travel insurance', status: 'not-started', dueDate: '' },
+                { id: 57, title: '🇮🇳 Print insurance policy and save digital copy', status: 'not-started', dueDate: '' },
+                { id: 58, title: '🇮🇳 Convert USD to INR before departure', status: 'not-started', dueDate: '' },
+                { id: 59, title: '🇮🇳 Research current exchange rates', status: 'not-started', dueDate: '' },
+                
+                // PACKING CHECKLIST
+                { id: 60, title: '🎒 Pack copies of all important documents', status: 'not-started', dueDate: '' },
+                { id: 61, title: '🎒 Pack passports (originals)', status: 'not-started', dueDate: '' },
+                { id: 62, title: '🎒 Pack I-94 cards (originals)', status: 'not-started', dueDate: '' },
+                { id: 63, title: '🎒 Pack medications (full supply)', status: 'not-started', dueDate: '' },
+                { id: 64, title: '🎒 Pack phone chargers and power bank', status: 'not-started', dueDate: '' },
+                { id: 65, title: '🎒 Pack credit cards and cash ($500)', status: 'not-started', dueDate: '' },
+                { id: 66, title: '🎒 Pack winter/summer clothes for India', status: 'not-started', dueDate: '' },
+                { id: 67, title: '🎒 Pack toiletries and first aid kit', status: 'not-started', dueDate: '' },
+                { id: 68, title: '🎒 Pack formal wear for visa interview', status: 'not-started', dueDate: '' },
+                { id: 69, title: '🎒 Pack son\'s study materials', status: 'not-started', dueDate: '' },
+                { id: 70, title: '🎒 Pack universal adapter for India', status: 'not-started', dueDate: '' },
+                
+                // FINAL PREPARATIONS
+                { id: 71, title: '✅ Reconfirm flight on Etihad website', status: 'not-started', dueDate: '' },
+                { id: 72, title: '✅ Register with US Embassy using STEP program', status: 'not-started', dueDate: '' },
+                { id: 73, title: '✅ Arrive airport 3 hours before departure', status: 'not-started', dueDate: '' },
+                { id: 74, title: '✅ Confirm Etihad return flight (Dec 15)', status: 'not-started', dueDate: '' },
+                { id: 75, title: '✅ Reconfirm return flight 24 hours before departure', status: 'not-started', dueDate: '' }
+            ];
+        }
+
+        function saveTasks() {
+            if (!databaseURL) return;
+            
+            const tasksObj = {};
+            tasks.forEach((task, index) => {
+                tasksObj[index] = task;
+            });
+
+            fetch(databaseURL + '/tasks.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(tasksObj)
+            })
+            .then(r => r.json())
+            .then(() => {
+                console.log('✅ Tasks saved');
+                showStatus('✅ Saved to Cloud');
+            })
+            .catch(e => {
+                console.error('Save error:', e);
+                showStatus('❌ Save failed');
+            });
+        }
+
+        function displayTasks() {
+            const container = document.getElementById('tasksList');
+            container.innerHTML = '';
+
+            const completed = tasks.filter(t => t.status === 'completed').length;
+            const remaining = tasks.length - completed;
+
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('totalCount').textContent = tasks.length;
+
+            tasks.forEach((task, index) => {
+                const taskEl = document.createElement('div');
+                taskEl.className = 'task-item';
+                taskEl.innerHTML = `
+                    <div class="task-title">${task.title || 'Untitled'}</div>
+                    <div class="task-status">
+                        <select onchange="updateStatus(${index}, this.value)">
+                            <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                            <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                        </select>
+                        <input type="date" value="${task.dueDate || ''}" onchange="updateDate(${index}, this.value)">
+                        <button class="btn-delete" onclick="deleteTask(${index})">Delete</button>
+                    </div>
+                `;
+                container.appendChild(taskEl);
+            });
+        }
+
+        function updateStatus(index, status) {
+            tasks[index].status = status;
+            saveTasks();
+            displayTasks();
+        }
+
+        function updateDate(index, date) {
+            tasks[index].dueDate = date;
+            saveTasks();
+        }
+
+        function deleteTask(index) {
+            if (confirm('Delete this task?')) {
+                tasks.splice(index, 1);
+                saveTasks();
+                displayTasks();
+            }
+        }
+
+        function showStatus(msg) {
+            const status = document.getElementById('statusMsg');
+            status.textContent = msg;
+            status.style.display = 'block';
+            setTimeout(() => { status.style.display = 'none'; }, 3000);
+        }
+
+        function showSetup() {
+            document.getElementById('setupModal').classList.remove('hidden');
+        }
+
+        function startSyncInterval() {
+            // Reload tasks every 5 seconds to see other user's changes
+            setInterval(() => {
+                if (databaseURL) {
+                    fetch(databaseURL + '/tasks.json')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data && typeof data === 'object') {
+                                tasks = Object.values(data).filter(t => t && typeof t === 'object');
+                                displayTasks();
+                            }
+                        })
+                        .catch(e => console.log('Sync error:', e));
+                }
+            }, 5000);
+        }
+
+        // Load saved config on startup
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('firebaseConfig');
+            if (saved) {
+                try {
+                    const config = JSON.parse(saved);
+                    document.getElementById('apiKey').value = config.apiKey;
+                    document.getElementById('authDomain').value = config.authDomain;
+                    document.getElementById('databaseURL').value = config.databaseURL;
+                    document.getElementById('projectId').value = config.projectId;
+                    
+                    // Auto-connect
+                    databaseURL = config.databaseURL.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
+                    testConnection();
+                } catch (e) {
+                    console.log('Load error:', e);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
