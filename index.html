@@ -13,24 +13,29 @@
         .setup-content { background: white; border-radius: 20px; padding: 40px; max-width: 600px; margin: auto; }
         .setup-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
         .form-input { width: 100%; padding: 10px; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 12px; margin-bottom: 12px; }
-        .form-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
         .btn-setup { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; }
-        .btn-setup:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(102,126,234,0.4); }
-        .header-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; }
-        .header-title { font-size: 48px; font-weight: 800; margin-bottom: 10px; }
-        .container-main { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
-        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); margin-bottom: 24px; }
-        .card-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 20px; }
-        .task-item { padding: 16px; background: #f9f9f9; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid #667eea; }
-        .task-title { font-weight: 600; color: #1a1a1a; margin-bottom: 8px; }
-        .task-status { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-        .task-status select, .task-status input { padding: 8px 12px; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 13px; }
-        .btn-delete { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
-        .stat-number { font-size: 48px; font-weight: 700; }
-        .stat-label { font-size: 14px; font-weight: 600; opacity: 0.9; margin-top: 10px; }
+        .header-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
+        .header-title { font-size: 36px; font-weight: 800; margin-bottom: 5px; }
+        .container-main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .tab-container { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 16px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s; }
+        .tab-btn.active { background: white; color: #667eea; }
+        .tab-btn:hover { background: rgba(255,255,255,0.3); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .category-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .category-title { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 15px; }
+        .task-item { padding: 12px; background: #f9f9f9; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
+        .task-title { font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 14px; }
+        .task-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .task-controls select, .task-controls input { padding: 6px 10px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 12px; }
+        .btn-delete { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
+        .stat-number { font-size: 36px; font-weight: 700; }
+        .stat-label { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 8px; }
         .loading { text-align: center; padding: 40px; font-size: 18px; color: white; }
-        .status-msg { padding: 12px; background: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #1e40af; }
+        @media (max-width: 768px) { .header-title { font-size: 24px; } .tab-btn { font-size: 10px; padding: 8px 12px; } }
     </style>
 </head>
 <body>
@@ -38,13 +43,11 @@
     <div id="setupModal" class="setup-modal">
         <div class="setup-content">
             <div class="setup-title">🔧 Firebase Setup</div>
-            <p style="color: #666; margin-bottom: 20px; font-size: 13px;">Enter your Firebase config values</p>
-            
+            <p style="color: #666; margin-bottom: 20px; font-size: 13px;">Enter your Firebase config values from console.firebase.google.com</p>
             <input type="text" id="apiKey" class="form-input" placeholder="API Key">
             <input type="text" id="authDomain" class="form-input" placeholder="Auth Domain">
-            <input type="text" id="databaseURL" class="form-input" placeholder="Database URL (https://xxx.firebaseio.com)">
+            <input type="text" id="databaseURL" class="form-input" placeholder="Database URL">
             <input type="text" id="projectId" class="form-input" placeholder="Project ID">
-            
             <button class="btn-setup" onclick="connectToFirebase()">✅ Connect to Firebase</button>
         </div>
     </div>
@@ -52,7 +55,7 @@
     <!-- Header -->
     <div class="header-container">
         <h1 class="header-title"><i class="fas fa-plane-departure"></i> India Travel Checklist</h1>
-        <p style="margin-top: 10px; opacity: 0.9;">Cloud Synced ☁️</p>
+        <p style="margin-top: 5px; opacity: 0.9; font-size: 14px;">Cloud Synced ☁️ | Family Trip Nov 22 - Dec 15</p>
     </div>
 
     <!-- Main Content -->
@@ -60,41 +63,70 @@
         <div id="loading" class="loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
         
         <div id="content" style="display: none;">
-            <div id="statusMsg" class="status-msg" style="display: none;"></div>
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('critical')">🔴 Critical</button>
+                <button class="tab-btn" onclick="switchTab('documents')">📄 Documents</button>
+                <button class="tab-btn" onclick="switchTab('financial')">💳 Financial</button>
+                <button class="tab-btn" onclick="switchTab('employer')">👔 Employer</button>
+                <button class="tab-btn" onclick="switchTab('school')">📚 School</button>
+                <button class="tab-btn" onclick="switchTab('home')">🏠 Home</button>
+                <button class="tab-btn" onclick="switchTab('medical')">⚕️ Medical</button>
+                <button class="tab-btn" onclick="switchTab('india')">🇮🇳 India</button>
+                <button class="tab-btn" onclick="switchTab('packing')">🎒 Packing</button>
+                <button class="tab-btn" onclick="switchTab('final')">✅ Final</button>
+            </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div class="stat-card">
-                    <div class="stat-number" id="completedCount">0</div>
-                    <div class="stat-label">✅ Completed</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                    <div class="stat-number" id="remainingCount">0</div>
-                    <div class="stat-label">🔄 Remaining</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
-                    <div class="stat-number" id="totalCount">0</div>
-                    <div class="stat-label">📋 Total Tasks</div>
+            <!-- DASHBOARD TAB -->
+            <div id="dashboard" class="tab-content active">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedCount">0</div>
+                        <div class="stat-label">✅ Completed</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="stat-number" id="remainingCount">0</div>
+                        <div class="stat-label">🔄 Remaining</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
+                        <div class="stat-number" id="totalCount">0</div>
+                        <div class="stat-label">📋 Total Tasks</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-title">📝 Travel Checklist</div>
-                <div id="tasksList"></div>
-            </div>
-
-            <div style="text-align: center;">
-                <button class="btn-setup" onclick="showSetup()" style="max-width: 200px;">⚙️ Settings</button>
-            </div>
+            <!-- CATEGORY TABS -->
+            <div id="critical" class="tab-content"></div>
+            <div id="documents" class="tab-content"></div>
+            <div id="financial" class="tab-content"></div>
+            <div id="employer" class="tab-content"></div>
+            <div id="school" class="tab-content"></div>
+            <div id="home" class="tab-content"></div>
+            <div id="medical" class="tab-content"></div>
+            <div id="india" class="tab-content"></div>
+            <div id="packing" class="tab-content"></div>
+            <div id="final" class="tab-content"></div>
         </div>
     </div>
 
     <script>
         let databaseURL = '';
         let tasks = [];
+        const categoryMap = {
+            'critical': 'CRITICAL - DO THIS FIRST',
+            'documents': 'DOCUMENTS TO PREPARE',
+            'financial': 'FINANCIAL & BANKING',
+            'employer': 'EMPLOYER & WORK',
+            'school': 'SCHOOL & FAMILY',
+            'home': 'HOME PREPARATION',
+            'medical': 'MEDICAL PREPARATIONS',
+            'india': 'INDIA PREPARATIONS',
+            'packing': 'PACKING CHECKLIST',
+            'final': 'FINAL PREPARATIONS'
+        };
 
         function connectToFirebase() {
-            console.log('Connect button clicked');
-            
             const apiKey = document.getElementById('apiKey').value.trim();
             const authDomain = document.getElementById('authDomain').value.trim();
             const dbURL = document.getElementById('databaseURL').value.trim();
@@ -105,33 +137,23 @@
                 return;
             }
 
-            // Extract base URL (remove trailing slash and /tasks.json if present)
             databaseURL = dbURL.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
-            
-            console.log('Database URL set to:', databaseURL);
-
             const config = { apiKey, authDomain, databaseURL: dbURL, projectId };
             localStorage.setItem('firebaseConfig', JSON.stringify(config));
 
             document.getElementById('loading').style.display = 'block';
-            
-            // Test connection
             testConnection();
         }
 
         function testConnection() {
-            console.log('Testing connection to:', databaseURL + '/tasks.json');
-            
             fetch(databaseURL + '/tasks.json')
                 .then(response => {
-                    console.log('Response status:', response.status);
                     if (response.status === 401) {
-                        throw new Error('Database rules need to be fixed. Go to Firebase Console → Realtime Database → Rules and set:\n{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}');
+                        throw new Error('Database rules need fixing. Go to Firebase → Realtime Database → Rules and set:\n{\n  "rules": {\n    ".read": true,\n    ".write": true\n  }\n}');
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('✅ Connection successful!');
                     document.getElementById('setupModal').classList.add('hidden');
                     document.getElementById('loading').style.display = 'none';
                     document.getElementById('content').style.display = 'block';
@@ -140,13 +162,13 @@
                         tasks = Object.values(data).filter(t => t && typeof t === 'object');
                     } else {
                         tasks = getDefaultTasks();
+                        saveTasks();
                     }
                     
                     displayTasks();
                     startSyncInterval();
                 })
                 .catch(error => {
-                    console.error('Connection error:', error);
                     alert('❌ Connection failed:\n' + error.message);
                     document.getElementById('loading').style.display = 'none';
                 });
@@ -154,189 +176,176 @@
 
         function getDefaultTasks() {
             return [
-                // CRITICAL - DO THIS FIRST
-                { id: 1, title: '🔴 Verify I-94 validity for all family members', status: 'not-started', dueDate: '' },
-                { id: 2, title: '🔴 Check USCIS SEVIS database and CBP I-94 records', status: 'not-started', dueDate: '' },
-                { id: 3, title: '🔴 Apply for I-131 (Advance Parole) if I-94 expired', status: 'not-started', dueDate: '' },
-                { id: 4, title: '🔴 Confirm H1B is valid and hasn\'t expired', status: 'not-started', dueDate: '' },
-                { id: 5, title: '🔴 Confirm wife\'s and son\'s H4 validity', status: 'not-started', dueDate: '' },
-                { id: 6, title: '🔴 Verify wife\'s EAD Card is valid', status: 'not-started', dueDate: '' },
-                { id: 7, title: '🔴 Verify all passports are valid (6+ months beyond return)', status: 'not-started', dueDate: '' },
-                { id: 8, title: '🔴 Get India visa for you, wife, and son', status: 'not-started', dueDate: '' },
-                { id: 9, title: '🔴 Confirm daughter has US passport', status: 'not-started', dueDate: '' },
-                { id: 10, title: '🔴 Clarify: H1B extension or initial visa interview?', status: 'not-started', dueDate: '' },
-                { id: 11, title: '🔴 Gather employment documents (offer letter, pay stubs)', status: 'not-started', dueDate: '' },
-                { id: 12, title: '🔴 Collect I-797 approval notices', status: 'not-started', dueDate: '' },
-                { id: 13, title: '🔴 Confirm visa interview date, time, and location', status: 'not-started', dueDate: '' },
-                { id: 14, title: '🔴 Prepare interview answers and documents', status: 'not-started', dueDate: '' },
+                // CRITICAL
+                { id: 1, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify I-94 validity for all family members', status: 'not-started', dueDate: '' },
+                { id: 2, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Check USCIS SEVIS database and CBP I-94 records', status: 'not-started', dueDate: '' },
+                { id: 3, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Apply for I-131 (Advance Parole) if I-94 expired', status: 'not-started', dueDate: '' },
+                { id: 4, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm H1B is valid and hasn\'t expired', status: 'not-started', dueDate: '' },
+                { id: 5, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm wife\'s and son\'s H4 validity', status: 'not-started', dueDate: '' },
+                { id: 6, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify wife\'s EAD Card is valid', status: 'not-started', dueDate: '' },
+                { id: 7, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify all passports are valid (6+ months)', status: 'not-started', dueDate: '' },
+                { id: 8, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Get India visa for you, wife, and son', status: 'not-started', dueDate: '' },
+                { id: 9, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm daughter has US passport', status: 'not-started', dueDate: '' },
+                { id: 10, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Clarify H1B extension or initial visa interview', status: 'not-started', dueDate: '' },
+                { id: 11, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Gather employment documents (offer letter, pay stubs)', status: 'not-started', dueDate: '' },
+                { id: 12, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Collect I-797 approval notices', status: 'not-started', dueDate: '' },
+                { id: 13, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm visa interview date, time, location', status: 'not-started', dueDate: '' },
+                { id: 14, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Prepare interview answers and documents', status: 'not-started', dueDate: '' },
                 
-                // DOCUMENTS TO PREPARE
-                { id: 15, title: '📄 Collect all passports (valid 6+ months)', status: 'not-started', dueDate: '' },
-                { id: 16, title: '📄 Copy all stamped visa pages', status: 'not-started', dueDate: '' },
-                { id: 17, title: '📄 Print I-94 records from CBP website', status: 'not-started', dueDate: '' },
-                { id: 18, title: '📄 Collect I-797 forms (H1B and H4)', status: 'not-started', dueDate: '' },
-                { id: 19, title: '📄 Carry wife\'s original EAD card', status: 'not-started', dueDate: '' },
-                { id: 20, title: '📄 Collect birth certificates for all', status: 'not-started', dueDate: '' },
-                { id: 21, title: '📄 Get certified copy of marriage certificate', status: 'not-started', dueDate: '' },
-                { id: 22, title: '📄 Print flight tickets (6 copies)', status: 'not-started', dueDate: '' },
-                { id: 23, title: '📄 Print hotel reservations', status: 'not-started', dueDate: '' },
-                { id: 24, title: '📄 Print travel insurance policy', status: 'not-started', dueDate: '' },
-                { id: 25, title: '📄 Collect medical records and vaccination records', status: 'not-started', dueDate: '' },
+                // DOCUMENTS
+                { id: 15, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect all passports (valid 6+ months)', status: 'not-started', dueDate: '' },
+                { id: 16, category: 'DOCUMENTS TO PREPARE', title: '📄 Copy all stamped visa pages', status: 'not-started', dueDate: '' },
+                { id: 17, category: 'DOCUMENTS TO PREPARE', title: '📄 Print I-94 records from CBP website', status: 'not-started', dueDate: '' },
+                { id: 18, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect I-797 forms (H1B and H4)', status: 'not-started', dueDate: '' },
+                { id: 19, category: 'DOCUMENTS TO PREPARE', title: '📄 Carry wife\'s original EAD card', status: 'not-started', dueDate: '' },
+                { id: 20, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect birth certificates for all', status: 'not-started', dueDate: '' },
+                { id: 21, category: 'DOCUMENTS TO PREPARE', title: '📄 Get certified copy of marriage certificate', status: 'not-started', dueDate: '' },
+                { id: 22, category: 'DOCUMENTS TO PREPARE', title: '📄 Print flight tickets (6 copies)', status: 'not-started', dueDate: '' },
+                { id: 23, category: 'DOCUMENTS TO PREPARE', title: '📄 Print hotel reservations', status: 'not-started', dueDate: '' },
+                { id: 24, category: 'DOCUMENTS TO PREPARE', title: '📄 Print travel insurance policy', status: 'not-started', dueDate: '' },
+                { id: 25, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect medical records and vaccination records', status: 'not-started', dueDate: '' },
                 
-                // FINANCIAL & BANKING
-                { id: 26, title: '💳 Inform banks about travel dates', status: 'not-started', dueDate: '' },
-                { id: 27, title: '💳 Get printed bank statements (3-6 months)', status: 'not-started', dueDate: '' },
-                { id: 28, title: '💳 Carry 2-3 credit cards (different companies)', status: 'not-started', dueDate: '' },
-                { id: 29, title: '💳 Exchange USD to INR', status: 'not-started', dueDate: '' },
-                { id: 30, title: '💳 Notify wife\'s employer about EAD travel', status: 'not-started', dueDate: '' },
+                // FINANCIAL
+                { id: 26, category: 'FINANCIAL & BANKING', title: '💳 Inform banks about travel dates', status: 'not-started', dueDate: '' },
+                { id: 27, category: 'FINANCIAL & BANKING', title: '💳 Get printed bank statements (3-6 months)', status: 'not-started', dueDate: '' },
+                { id: 28, category: 'FINANCIAL & BANKING', title: '💳 Carry 2-3 credit cards (different companies)', status: 'not-started', dueDate: '' },
+                { id: 29, category: 'FINANCIAL & BANKING', title: '💳 Exchange USD to INR', status: 'not-started', dueDate: '' },
+                { id: 30, category: 'FINANCIAL & BANKING', title: '💳 Notify wife\'s employer about EAD travel', status: 'not-started', dueDate: '' },
                 
-                // EMPLOYER & WORK
-                { id: 31, title: '👔 Notify your employer of travel dates', status: 'not-started', dueDate: '' },
-                { id: 32, title: '👔 Confirm return ticket to resume work immediately', status: 'not-started', dueDate: '' },
-                { id: 33, title: '👔 Get employer letter confirming employment', status: 'not-started', dueDate: '' },
-                { id: 34, title: '👔 Wife: Notify your employer about travel', status: 'not-started', dueDate: '' },
-                { id: 35, title: '👔 Wife: Get employment letter from company', status: 'not-started', dueDate: '' },
+                // EMPLOYER
+                { id: 31, category: 'EMPLOYER & WORK', title: '👔 Notify your employer of travel dates', status: 'not-started', dueDate: '' },
+                { id: 32, category: 'EMPLOYER & WORK', title: '👔 Confirm return ticket to resume work immediately', status: 'not-started', dueDate: '' },
+                { id: 33, category: 'EMPLOYER & WORK', title: '👔 Get employer letter confirming employment', status: 'not-started', dueDate: '' },
+                { id: 34, category: 'EMPLOYER & WORK', title: '👔 Wife: Notify your employer about travel', status: 'not-started', dueDate: '' },
+                { id: 35, category: 'EMPLOYER & WORK', title: '👔 Wife: Get employment letter from company', status: 'not-started', dueDate: '' },
                 
-                // SCHOOL & FAMILY
-                { id: 36, title: '📚 Get official letter from school confirming grade', status: 'not-started', dueDate: '' },
-                { id: 37, title: '📚 Collect homework/assignments for missed dates', status: 'not-started', dueDate: '' },
-                { id: 38, title: '📚 Contact school about re-entry procedures', status: 'not-started', dueDate: '' },
-                { id: 39, title: '📚 Get required immunization records', status: 'not-started', dueDate: '' },
+                // SCHOOL
+                { id: 36, category: 'SCHOOL & FAMILY', title: '📚 Get official letter from school confirming grade', status: 'not-started', dueDate: '' },
+                { id: 37, category: 'SCHOOL & FAMILY', title: '📚 Collect homework/assignments for missed dates', status: 'not-started', dueDate: '' },
+                { id: 38, category: 'SCHOOL & FAMILY', title: '📚 Contact school about re-entry procedures', status: 'not-started', dueDate: '' },
+                { id: 39, category: 'SCHOOL & FAMILY', title: '📚 Get required immunization records', status: 'not-started', dueDate: '' },
                 
-                // HOME PREPARATION
-                { id: 40, title: '🏠 Arrange mail hold with USPS', status: 'not-started', dueDate: '' },
-                { id: 41, title: '🏠 Lock all windows and doors', status: 'not-started', dueDate: '' },
-                { id: 42, title: '🏠 Set thermostat appropriately', status: 'not-started', dueDate: '' },
-                { id: 43, title: '🏠 Ask neighbor to check on home', status: 'not-started', dueDate: '' },
-                { id: 44, title: '🏠 Take photos of valuable items for insurance', status: 'not-started', dueDate: '' },
+                // HOME
+                { id: 40, category: 'HOME PREPARATION', title: '🏠 Arrange mail hold with USPS', status: 'not-started', dueDate: '' },
+                { id: 41, category: 'HOME PREPARATION', title: '🏠 Lock all windows and doors', status: 'not-started', dueDate: '' },
+                { id: 42, category: 'HOME PREPARATION', title: '🏠 Set thermostat appropriately', status: 'not-started', dueDate: '' },
+                { id: 43, category: 'HOME PREPARATION', title: '🏠 Ask neighbor to check on home', status: 'not-started', dueDate: '' },
+                { id: 44, category: 'HOME PREPARATION', title: '🏠 Take photos of valuable items for insurance', status: 'not-started', dueDate: '' },
                 
-                // MEDICAL PREPARATIONS
-                { id: 45, title: '⚕️ Refill all prescriptions', status: 'not-started', dueDate: '' },
-                { id: 46, title: '⚕️ Visit dentist for checkup', status: 'not-started', dueDate: '' },
-                { id: 47, title: '⚕️ Visit doctor for checkup', status: 'not-started', dueDate: '' },
-                { id: 48, title: '⚕️ Get doctor\'s letter for medications', status: 'not-started', dueDate: '' },
-                { id: 49, title: '⚕️ Research hospitals near India destination', status: 'not-started', dueDate: '' },
+                // MEDICAL
+                { id: 45, category: 'MEDICAL PREPARATIONS', title: '⚕️ Refill all prescriptions', status: 'not-started', dueDate: '' },
+                { id: 46, category: 'MEDICAL PREPARATIONS', title: '⚕️ Visit dentist for checkup', status: 'not-started', dueDate: '' },
+                { id: 47, category: 'MEDICAL PREPARATIONS', title: '⚕️ Visit doctor for checkup', status: 'not-started', dueDate: '' },
+                { id: 48, category: 'MEDICAL PREPARATIONS', title: '⚕️ Get doctor\'s letter for medications', status: 'not-started', dueDate: '' },
+                { id: 49, category: 'MEDICAL PREPARATIONS', title: '⚕️ Research hospitals near India destination', status: 'not-started', dueDate: '' },
                 
-                // INDIA PREPARATIONS
-                { id: 50, title: '🇮🇳 Book accommodations (hotel/family home)', status: 'not-started', dueDate: '' },
-                { id: 51, title: '🇮🇳 Arrange transportation from airport', status: 'not-started', dueDate: '' },
-                { id: 52, title: '🇮🇳 Confirm visa interview appointment details', status: 'not-started', dueDate: '' },
-                { id: 53, title: '🇮🇳 Check weather forecast for India', status: 'not-started', dueDate: '' },
-                { id: 54, title: '🇮🇳 Get Indian phone SIM or roaming plan', status: 'not-started', dueDate: '' },
-                { id: 55, title: '🇮🇳 Notify family in India of arrival details', status: 'not-started', dueDate: '' },
-                { id: 56, title: '🇮🇳 Purchase travel insurance', status: 'not-started', dueDate: '' },
-                { id: 57, title: '🇮🇳 Print insurance policy and save digital copy', status: 'not-started', dueDate: '' },
-                { id: 58, title: '🇮🇳 Convert USD to INR before departure', status: 'not-started', dueDate: '' },
-                { id: 59, title: '🇮🇳 Research current exchange rates', status: 'not-started', dueDate: '' },
+                // INDIA
+                { id: 50, category: 'INDIA PREPARATIONS', title: '🇮🇳 Book accommodations (hotel/family home)', status: 'not-started', dueDate: '' },
+                { id: 51, category: 'INDIA PREPARATIONS', title: '🇮🇳 Arrange transportation from airport', status: 'not-started', dueDate: '' },
+                { id: 52, category: 'INDIA PREPARATIONS', title: '🇮🇳 Confirm visa interview appointment details', status: 'not-started', dueDate: '' },
+                { id: 53, category: 'INDIA PREPARATIONS', title: '🇮🇳 Check weather forecast for India', status: 'not-started', dueDate: '' },
+                { id: 54, category: 'INDIA PREPARATIONS', title: '🇮🇳 Get Indian phone SIM or roaming plan', status: 'not-started', dueDate: '' },
+                { id: 55, category: 'INDIA PREPARATIONS', title: '🇮🇳 Notify family in India of arrival details', status: 'not-started', dueDate: '' },
+                { id: 56, category: 'INDIA PREPARATIONS', title: '🇮🇳 Purchase travel insurance', status: 'not-started', dueDate: '' },
+                { id: 57, category: 'INDIA PREPARATIONS', title: '🇮🇳 Print insurance policy and save digital copy', status: 'not-started', dueDate: '' },
+                { id: 58, category: 'INDIA PREPARATIONS', title: '🇮🇳 Convert USD to INR before departure', status: 'not-started', dueDate: '' },
+                { id: 59, category: 'INDIA PREPARATIONS', title: '🇮🇳 Research current exchange rates', status: 'not-started', dueDate: '' },
                 
-                // PACKING CHECKLIST
-                { id: 60, title: '🎒 Pack copies of all important documents', status: 'not-started', dueDate: '' },
-                { id: 61, title: '🎒 Pack passports (originals)', status: 'not-started', dueDate: '' },
-                { id: 62, title: '🎒 Pack I-94 cards (originals)', status: 'not-started', dueDate: '' },
-                { id: 63, title: '🎒 Pack medications (full supply)', status: 'not-started', dueDate: '' },
-                { id: 64, title: '🎒 Pack phone chargers and power bank', status: 'not-started', dueDate: '' },
-                { id: 65, title: '🎒 Pack credit cards and cash ($500)', status: 'not-started', dueDate: '' },
-                { id: 66, title: '🎒 Pack winter/summer clothes for India', status: 'not-started', dueDate: '' },
-                { id: 67, title: '🎒 Pack toiletries and first aid kit', status: 'not-started', dueDate: '' },
-                { id: 68, title: '🎒 Pack formal wear for visa interview', status: 'not-started', dueDate: '' },
-                { id: 69, title: '🎒 Pack son\'s study materials', status: 'not-started', dueDate: '' },
-                { id: 70, title: '🎒 Pack universal adapter for India', status: 'not-started', dueDate: '' },
+                // PACKING
+                { id: 60, category: 'PACKING CHECKLIST', title: '🎒 Pack copies of all important documents', status: 'not-started', dueDate: '' },
+                { id: 61, category: 'PACKING CHECKLIST', title: '🎒 Pack passports (originals)', status: 'not-started', dueDate: '' },
+                { id: 62, category: 'PACKING CHECKLIST', title: '🎒 Pack I-94 cards (originals)', status: 'not-started', dueDate: '' },
+                { id: 63, category: 'PACKING CHECKLIST', title: '🎒 Pack medications (full supply)', status: 'not-started', dueDate: '' },
+                { id: 64, category: 'PACKING CHECKLIST', title: '🎒 Pack phone chargers and power bank', status: 'not-started', dueDate: '' },
+                { id: 65, category: 'PACKING CHECKLIST', title: '🎒 Pack credit cards and cash ($500)', status: 'not-started', dueDate: '' },
+                { id: 66, category: 'PACKING CHECKLIST', title: '🎒 Pack winter/summer clothes for India', status: 'not-started', dueDate: '' },
+                { id: 67, category: 'PACKING CHECKLIST', title: '🎒 Pack toiletries and first aid kit', status: 'not-started', dueDate: '' },
+                { id: 68, category: 'PACKING CHECKLIST', title: '🎒 Pack formal wear for visa interview', status: 'not-started', dueDate: '' },
+                { id: 69, category: 'PACKING CHECKLIST', title: '🎒 Pack son\'s study materials', status: 'not-started', dueDate: '' },
+                { id: 70, category: 'PACKING CHECKLIST', title: '🎒 Pack universal adapter for India', status: 'not-started', dueDate: '' },
                 
-                // FINAL PREPARATIONS
-                { id: 71, title: '✅ Reconfirm flight on Etihad website', status: 'not-started', dueDate: '' },
-                { id: 72, title: '✅ Register with US Embassy using STEP program', status: 'not-started', dueDate: '' },
-                { id: 73, title: '✅ Arrive airport 3 hours before departure', status: 'not-started', dueDate: '' },
-                { id: 74, title: '✅ Confirm Etihad return flight (Dec 15)', status: 'not-started', dueDate: '' },
-                { id: 75, title: '✅ Reconfirm return flight 24 hours before departure', status: 'not-started', dueDate: '' }
+                // FINAL
+                { id: 71, category: 'FINAL PREPARATIONS', title: '✅ Reconfirm flight on Etihad website', status: 'not-started', dueDate: '' },
+                { id: 72, category: 'FINAL PREPARATIONS', title: '✅ Register with US Embassy using STEP program', status: 'not-started', dueDate: '' },
+                { id: 73, category: 'FINAL PREPARATIONS', title: '✅ Arrive airport 3 hours before departure', status: 'not-started', dueDate: '' },
+                { id: 74, category: 'FINAL PREPARATIONS', title: '✅ Confirm Etihad return flight (Dec 15)', status: 'not-started', dueDate: '' },
+                { id: 75, category: 'FINAL PREPARATIONS', title: '✅ Reconfirm return flight 24 hours before departure', status: 'not-started', dueDate: '' }
             ];
         }
 
         function saveTasks() {
             if (!databaseURL) return;
-            
             const tasksObj = {};
-            tasks.forEach((task, index) => {
-                tasksObj[index] = task;
-            });
-
-            fetch(databaseURL + '/tasks.json', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(tasksObj)
-            })
-            .then(r => r.json())
-            .then(() => {
-                console.log('✅ Tasks saved');
-                showStatus('✅ Saved to Cloud');
-            })
-            .catch(e => {
-                console.error('Save error:', e);
-                showStatus('❌ Save failed');
-            });
+            tasks.forEach((task, index) => { tasksObj[index] = task; });
+            fetch(databaseURL + '/tasks.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(tasksObj) })
+                .catch(e => console.log('Save error:', e));
         }
 
         function displayTasks() {
-            const container = document.getElementById('tasksList');
-            container.innerHTML = '';
-
             const completed = tasks.filter(t => t.status === 'completed').length;
-            const remaining = tasks.length - completed;
-
             document.getElementById('completedCount').textContent = completed;
-            document.getElementById('remainingCount').textContent = remaining;
+            document.getElementById('remainingCount').textContent = tasks.length - completed;
             document.getElementById('totalCount').textContent = tasks.length;
 
-            tasks.forEach((task, index) => {
-                const taskEl = document.createElement('div');
-                taskEl.className = 'task-item';
-                taskEl.innerHTML = `
-                    <div class="task-title">${task.title || 'Untitled'}</div>
-                    <div class="task-status">
-                        <select onchange="updateStatus(${index}, this.value)">
-                            <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                            <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
-                        </select>
-                        <input type="date" value="${task.dueDate || ''}" onchange="updateDate(${index}, this.value)">
-                        <button class="btn-delete" onclick="deleteTask(${index})">Delete</button>
-                    </div>
-                `;
-                container.appendChild(taskEl);
+            Object.keys(categoryMap).forEach(tab => {
+                const categoryName = categoryMap[tab];
+                const categoryTasks = tasks.filter(t => t.category === categoryName);
+                const container = document.getElementById(tab);
+                container.innerHTML = '';
+
+                if (categoryTasks.length > 0) {
+                    const card = document.createElement('div');
+                    card.className = 'category-card';
+                    card.innerHTML = `<div class="category-title">${categoryName}</div>`;
+
+                    categoryTasks.forEach((task, index) => {
+                        const taskEl = document.createElement('div');
+                        taskEl.className = 'task-item';
+                        taskEl.innerHTML = `
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-controls">
+                                <select onchange="updateStatus(${task.id}, this.value)">
+                                    <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                    <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                </select>
+                                <input type="date" value="${task.dueDate || ''}" onchange="updateDate(${task.id}, this.value)">
+                                <button class="btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+                            </div>
+                        `;
+                        card.appendChild(taskEl);
+                    });
+                    container.appendChild(card);
+                }
             });
         }
 
-        function updateStatus(index, status) {
-            tasks[index].status = status;
-            saveTasks();
-            displayTasks();
+        function updateStatus(id, status) {
+            const task = tasks.find(t => t.id === id);
+            if (task) { task.status = status; saveTasks(); displayTasks(); }
         }
 
-        function updateDate(index, date) {
-            tasks[index].dueDate = date;
-            saveTasks();
+        function updateDate(id, date) {
+            const task = tasks.find(t => t.id === id);
+            if (task) { task.dueDate = date; saveTasks(); }
         }
 
-        function deleteTask(index) {
+        function deleteTask(id) {
             if (confirm('Delete this task?')) {
-                tasks.splice(index, 1);
+                tasks = tasks.filter(t => t.id !== id);
                 saveTasks();
                 displayTasks();
             }
         }
 
-        function showStatus(msg) {
-            const status = document.getElementById('statusMsg');
-            status.textContent = msg;
-            status.style.display = 'block';
-            setTimeout(() => { status.style.display = 'none'; }, 3000);
-        }
-
-        function showSetup() {
-            document.getElementById('setupModal').classList.remove('hidden');
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
         }
 
         function startSyncInterval() {
-            // Reload tasks every 5 seconds to see other user's changes
             setInterval(() => {
                 if (databaseURL) {
                     fetch(databaseURL + '/tasks.json')
@@ -352,7 +361,6 @@
             }, 5000);
         }
 
-        // Load saved config on startup
         window.addEventListener('load', () => {
             const saved = localStorage.getItem('firebaseConfig');
             if (saved) {
@@ -362,8 +370,6 @@
                     document.getElementById('authDomain').value = config.authDomain;
                     document.getElementById('databaseURL').value = config.databaseURL;
                     document.getElementById('projectId').value = config.projectId;
-                    
-                    // Auto-connect
                     databaseURL = config.databaseURL.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
                     testConnection();
                 } catch (e) {
