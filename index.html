@@ -359,6 +359,11 @@
                 const categoryName = categoryMap[tab];
                 const categoryTasks = tasks.filter(t => t.category === categoryName);
                 const container = document.getElementById(tab);
+                
+                // Save input value before clearing
+                const inputId = 'newTask_' + tab;
+                const savedInputValue = document.getElementById(inputId)?.value || '';
+                
                 container.innerHTML = '';
 
                 const card = document.createElement('div');
@@ -369,7 +374,7 @@
                 const formContainer = document.createElement('div');
                 formContainer.className = 'add-item-form';
                 formContainer.innerHTML = `
-                    <input type="text" id="newTask_${tab}" placeholder="Add new task..." />
+                    <input type="text" id="newTask_${tab}" placeholder="Add new task..." value="${savedInputValue}" />
                     <button onclick="addNewTask('${tab}', '${categoryName}')">➕ Add Task</button>
                 `;
                 card.appendChild(formContainer);
@@ -447,15 +452,25 @@
         }
 
         function startSyncInterval() {
+            let lastSync = JSON.stringify(tasks);
+            
             setInterval(() => {
                 if (databaseURL) {
                     fetch(databaseURL + '/tasks.json')
                         .then(r => r.json())
                         .then(data => {
                             if (data && typeof data === 'object') {
-                                tasks = Object.values(data).filter(t => t && typeof t === 'object');
-                                nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
-                                displayTasks();
+                                const remoteTasks = Object.values(data).filter(t => t && typeof t === 'object');
+                                const currentSync = JSON.stringify(remoteTasks);
+                                
+                                // Only update if data changed
+                                if (currentSync !== lastSync) {
+                                    tasks = remoteTasks;
+                                    nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
+                                    lastSync = currentSync;
+                                    displayTasks();
+                                    console.log('✅ Synced with Firebase');
+                                }
                             }
                         })
                         .catch(e => console.log('Sync error:', e));
