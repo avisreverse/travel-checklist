@@ -89,6 +89,14 @@
             text-align: center;
             border: 2px solid #e5e7eb;
             border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
         }
 
         .stat-card.completed { border-left-color: #10b981; }
@@ -287,6 +295,66 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
+        /* TASK LIST MODAL */
+        .modal-content.large {
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content.large .modal-body {
+            max-height: calc(80vh - 150px);
+            overflow-y: auto;
+        }
+
+        .task-list-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .task-list-item.completed {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+            opacity: 0.7;
+        }
+
+        .task-list-item.in-progress {
+            background: #fffbeb;
+            border-left-color: #f59e0b;
+        }
+
+        .task-list-item.waiting {
+            background: #f3f4f6;
+            border-left-color: #8b5cf6;
+        }
+
+        .task-list-item.not-started {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+
+        .task-list-item.overdue {
+            background: #fee2e2;
+            border-left-color: #dc2626;
+        }
+
+        .task-list-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .task-list-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            gap: 15px;
+        }
+
         .modal-header {
             font-size: 18px;
             font-weight: 700;
@@ -414,6 +482,19 @@
                     <div class="modal-footer">
                         <button class="btn-modal btn-cancel" onclick="closeEditModal()">Cancel</button>
                         <button class="btn-modal btn-save" onclick="saveTaskEdit()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TASK LIST MODAL -->
+            <div id="taskListModal" class="modal">
+                <div class="modal-content large">
+                    <div class="modal-header" id="taskListTitle">📋 Tasks</div>
+                    <div class="modal-body" id="taskListContent">
+                        <!-- Tasks will be inserted here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeTaskListModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -648,15 +729,34 @@
             };
 
             document.getElementById('stat-completed').textContent = stats.completed;
+            document.getElementById('stat-completed').parentElement.onclick = () => showTasksByStatus('completed', '✅ Completed Tasks');
+            
             document.getElementById('stat-in-progress').textContent = stats['in-progress'];
+            document.getElementById('stat-in-progress').parentElement.onclick = () => showTasksByStatus('in-progress', '🔄 In Progress Tasks');
+            
             document.getElementById('stat-waiting').textContent = stats.waiting;
+            document.getElementById('stat-waiting').parentElement.onclick = () => showTasksByStatus('waiting', '⏳ Waiting Tasks');
+            
             document.getElementById('stat-not-started').textContent = stats['not-started'];
+            document.getElementById('stat-not-started').parentElement.onclick = () => showTasksByStatus('not-started', '📋 Not Started Tasks');
+            
             document.getElementById('stat-overdue').textContent = stats.overdue;
+            document.getElementById('stat-overdue').parentElement.onclick = () => showTasksByStatus('overdue', '⚠️ Overdue Tasks');
+            
             document.getElementById('stat-total').textContent = tasks.length;
+            document.getElementById('stat-total').parentElement.onclick = () => showTasksByStatus('all', '📝 All Tasks');
+            
             document.getElementById('stat-siva').textContent = stats.siva;
+            document.getElementById('stat-siva').parentElement.onclick = () => showTasksByAssignee('Siva', '👨 Siva\'s Tasks');
+            
             document.getElementById('stat-priya').textContent = stats.priya;
+            document.getElementById('stat-priya').parentElement.onclick = () => showTasksByAssignee('Priya', '👩 Priya\'s Tasks');
+            
             document.getElementById('stat-both').textContent = stats.both;
+            document.getElementById('stat-both').parentElement.onclick = () => showTasksByAssignee('Both', '👥 Shared Tasks');
+            
             document.getElementById('stat-not-assigned').textContent = stats['not-assigned'];
+            document.getElementById('stat-not-assigned').parentElement.onclick = () => showTasksByAssignee('', '❓ Not Assigned Tasks');
         }
 
         function displayTasks() {
@@ -850,6 +950,74 @@
             }
         }
 
+        function showTasksByStatus(status, title) {
+            let filteredTasks = [];
+            
+            if (status === 'overdue') {
+                filteredTasks = tasks.filter(t => isOverdue(t.dueDate) && t.status !== 'completed');
+            } else if (status === 'all') {
+                filteredTasks = tasks;
+            } else {
+                filteredTasks = tasks.filter(t => t.status === status);
+            }
+            
+            displayTaskListModal(filteredTasks, title);
+        }
+
+        function showTasksByAssignee(assignee, title) {
+            let filteredTasks = [];
+            
+            if (assignee === '') {
+                filteredTasks = tasks.filter(t => !t.assigned || t.assigned === '');
+            } else {
+                filteredTasks = tasks.filter(t => t.assigned === assignee);
+            }
+            
+            displayTaskListModal(filteredTasks, title);
+        }
+
+        function displayTaskListModal(filteredTasks, title) {
+            const titleEl = document.getElementById('taskListTitle');
+            const contentEl = document.getElementById('taskListContent');
+            
+            titleEl.textContent = title + ' (' + filteredTasks.length + ')';
+            
+            if (filteredTasks.length === 0) {
+                contentEl.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">No tasks found</div>';
+            } else {
+                let html = '';
+                filteredTasks.forEach(task => {
+                    const isOverdueTask = isOverdue(task.dueDate) && task.status !== 'completed';
+                    const statusClass = isOverdueTask ? 'overdue' : task.status;
+                    const assignedBadge = task.assigned ? task.assigned : 'Not Assigned';
+                    
+                    const statusLabel = task.status === 'not-started' ? 'Not Started' 
+                                      : task.status === 'in-progress' ? 'In Progress'
+                                      : task.status === 'waiting' ? 'Waiting'
+                                      : 'Completed';
+                    
+                    html += `
+                        <div class="task-list-item ${statusClass}">
+                            <div class="task-list-title">${task.title}</div>
+                            <div class="task-list-meta">
+                                <span>📌 ${task.category}</span>
+                                <span>👤 ${assignedBadge}</span>
+                                <span>📊 ${statusLabel}</span>
+                                ${task.dueDate ? `<span>📅 ${new Date(task.dueDate).toLocaleDateString()}</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                contentEl.innerHTML = html;
+            }
+            
+            document.getElementById('taskListModal').classList.add('active');
+        }
+
+        function closeTaskListModal() {
+            document.getElementById('taskListModal').classList.remove('active');
+        }
+
         function switchView(tab) {
             console.log('Switching to tab:', tab);
             
@@ -894,14 +1062,20 @@
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeEditModal();
+                    closeTaskListModal();
                 }
             });
 
             // Close modal when clicking outside
             document.addEventListener('click', function(e) {
-                const modal = document.getElementById('editModal');
-                if (e.target === modal) {
+                const editModal = document.getElementById('editModal');
+                const taskListModal = document.getElementById('taskListModal');
+                
+                if (e.target === editModal) {
                     closeEditModal();
+                }
+                if (e.target === taskListModal) {
+                    closeTaskListModal();
                 }
             });
             
