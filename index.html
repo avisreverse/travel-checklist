@@ -3,328 +3,485 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>India Travel Checklist - Cloud Sync</title>
+    <title>India Travel Checklist</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .setup-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .setup-modal.hidden { display: none; }
-        .setup-content { background: white; border-radius: 20px; padding: 40px; max-width: 600px; margin: auto; }
-        .setup-title { font-size: 28px; font-weight: 700; margin-bottom: 20px; color: #667eea; }
-        .form-input { width: 100%; padding: 10px; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 12px; margin-bottom: 12px; }
-        .btn-setup { width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; }
-        .header-container { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px 20px; text-align: center; }
-        .header-title { font-size: 36px; font-weight: 800; margin-bottom: 5px; }
-        .container-main { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .tab-container { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
-        .tab-btn { padding: 10px 16px; background: rgba(255,255,255,0.2); color: white; border: 2px solid white; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s; }
-        .tab-btn.active { background: white; color: #667eea; }
-        .tab-btn:hover { background: rgba(255,255,255,0.3); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .category-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .category-title { font-size: 16px; font-weight: 700; color: #667eea; margin-bottom: 15px; }
-        .task-item { padding: 12px; background: #f9f9f9; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea; }
-        .task-title { font-weight: 600; color: #1a1a1a; margin-bottom: 8px; font-size: 14px; }
-        .task-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
-        .task-controls select, .task-controls input { padding: 6px 10px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 12px; }
-        .btn-delete { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
-        .btn-add { padding: 8px 14px; background: #dcfce7; color: #166534; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; margin-top: 10px; }
-        .btn-add:hover { background: #bbf7d0; }
-        .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; text-align: center; }
-        .stat-number { font-size: 36px; font-weight: 700; }
-        .stat-label { font-size: 12px; font-weight: 600; opacity: 0.9; margin-top: 8px; }
-        .loading { text-align: center; padding: 40px; font-size: 18px; color: white; }
-        .add-item-form { background: #f0f4ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #667eea; }
-        .add-item-form input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 10px; box-sizing: border-box; }
-        .add-item-form button { width: 100%; padding: 12px 14px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
-        .add-item-form button:hover { background: #764ba2; }
-        .stat-card.waiting-card { background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); }
-        @media (max-width: 768px) { 
-            .header-title { font-size: 24px; } 
-            .tab-btn { font-size: 10px; padding: 8px 12px; } 
-            .tab-container { gap: 5px; }
-            .container-main { padding: 10px; }
-            .category-card { padding: 15px; margin-bottom: 15px; }
-            .task-item { padding: 10px; margin-bottom: 8px; font-size: 13px; }
-            .task-title { font-size: 13px; margin-bottom: 6px; }
-            .task-controls { flex-direction: column; }
-            .task-controls select, .task-controls input, .btn-delete { width: 100%; font-size: 12px; padding: 8px; }
-            .add-item-form { padding: 12px; }
-            .add-item-form input { padding: 10px; font-size: 13px; }
-            .stat-card { padding: 15px; }
-            .stat-number { font-size: 28px; }
-            .stat-label { font-size: 11px; }
-            .header-container { padding: 20px 15px; }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
         }
-        @media (max-width: 480px) {
-            .header-title { font-size: 20px; }
-            .tab-btn { font-size: 9px; padding: 6px 10px; }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 28px; font-weight: 800; margin: 0; }
+        .header p { font-size: 14px; opacity: 0.9; margin: 5px 0 0 0; }
+
+        .container { max-width: 1200px; margin: 0 auto; background: white; min-height: 100vh; }
+
+        .nav-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 15px 20px;
+            border-bottom: 2px solid #e5e7eb;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-container::-webkit-scrollbar { height: 4px; }
+        .nav-container::-webkit-scrollbar-thumb { background: #667eea; border-radius: 2px; }
+
+        .nav-btn {
+            padding: 10px 16px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:hover { border-color: #667eea; background: #f0f4ff; }
+        .nav-btn.active { background: #667eea; color: white; border-color: #667eea; }
+
+        .content { padding: 20px; }
+
+        .tab-view { display: none; }
+        .tab-view.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* DASHBOARD SECTION */
+        .dashboard-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card.completed { border-left-color: #10b981; }
+        .stat-card.in-progress { border-left-color: #f59e0b; }
+        .stat-card.waiting { border-left-color: #8b5cf6; }
+        .stat-card.not-started { border-left-color: #ef4444; }
+        .stat-card.overdue { border-left-color: #dc2626; }
+        .stat-card.siva { border-left-color: #3b82f6; }
+        .stat-card.priya { border-left-color: #ec4899; }
+        .stat-card.both { border-left-color: #8b5cf6; }
+        .stat-card.not-assigned { border-left-color: #999; }
+
+        .stat-number { font-size: 32px; font-weight: 800; color: #667eea; margin: 5px 0; }
+        .stat-label { font-size: 12px; color: #666; font-weight: 600; }
+
+        /* CATEGORY SECTION */
+        .category-section {
+            margin-bottom: 30px;
+        }
+
+        .category-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            background: #f0f4ff;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .add-task-form {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .btn-add {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .btn-add:hover { background: #764ba2; }
+
+        /* TASK CARD */
+        .task-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .task-item.completed {
+            opacity: 0.6;
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+
+        .task-item.overdue {
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            font-size: 14px;
+        }
+
+        .task-item.completed .task-title {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .task-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .task-badge.siva { background: #3b82f6; }
+        .task-badge.priya { background: #ec4899; }
+        .task-badge.both { background: #8b5cf6; }
+        .task-badge.not-assigned { background: #999; }
+
+        .task-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 8px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .task-controls select,
+        .task-controls input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .btn-delete {
+            padding: 4px 8px;
+            background: none;
+            border: none;
+            color: #dc2626;
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .btn-delete:hover {
+            opacity: 1;
+            color: #991b1b;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .task-meta.overdue { color: #dc2626; font-weight: 600; }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 22px; }
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .form-grid { grid-template-columns: 1fr; }
+            .task-controls { grid-template-columns: 1fr; }
             .stat-number { font-size: 24px; }
+            .nav-container { flex-wrap: wrap; justify-content: center; }
+            .nav-btn { font-size: 11px; padding: 8px 12px; flex: 1 1 auto; min-width: auto; }
+            .category-header { font-size: 14px; word-wrap: break-word; white-space: normal; }
+            .add-task-form { padding: 12px; }
+            .btn-add { width: 100%; }
+            .task-controls { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <!-- Setup Modal (Hidden by default - auto-connects) -->
-    <div id="setupModal" class="setup-modal hidden">
-        <div class="setup-content">
-            <div class="setup-title">🔧 Firebase Setup</div>
-            <p style="color: #666; margin-bottom: 20px; font-size: 13px;">Enter your Firebase config values from console.firebase.google.com</p>
-            <input type="text" id="apiKey" class="form-input" placeholder="API Key">
-            <input type="text" id="authDomain" class="form-input" placeholder="Auth Domain">
-            <input type="text" id="databaseURL" class="form-input" placeholder="Database URL">
-            <input type="text" id="projectId" class="form-input" placeholder="Project ID">
-            <button class="btn-setup" onclick="connectToFirebase()">✅ Connect to Firebase</button>
+    <div class="header">
+        <h1>✈️ India Travel Checklist</h1>
+        <p>Family Trip Nov 22 - Dec 15 | Cloud Synced</p>
+    </div>
+
+    <div class="container">
+        <!-- NAVIGATION -->
+        <div class="nav-container">
+            <button class="nav-btn active" onclick="switchView('dashboard')">📊 Dashboard</button>
+            <button class="nav-btn" onclick="switchView('critical')">🔴 Critical</button>
+            <button class="nav-btn" onclick="switchView('documents')">📄 Documents</button>
+            <button class="nav-btn" onclick="switchView('financial')">💳 Financial</button>
+            <button class="nav-btn" onclick="switchView('employer')">👔 Employer</button>
+            <button class="nav-btn" onclick="switchView('school')">📚 School</button>
+            <button class="nav-btn" onclick="switchView('home')">🏠 Home</button>
+            <button class="nav-btn" onclick="switchView('medical')">⚕️ Medical</button>
+            <button class="nav-btn" onclick="switchView('india')">🇮🇳 India</button>
+            <button class="nav-btn" onclick="switchView('packing')">🎒 Packing</button>
+            <button class="nav-btn" onclick="switchView('final')">✅ Final</button>
         </div>
-    </div>
 
-    <!-- Header -->
-    <div class="header-container">
-        <h1 class="header-title"><i class="fas fa-plane-departure"></i> India Travel Checklist</h1>
-        <p style="margin-top: 5px; opacity: 0.9; font-size: 14px;">Cloud Synced ☁️ | Family Trip Nov 22 - Dec 15</p>
-    </div>
-
-    <!-- Main Content -->
-    <div class="container-main">
-        <div id="loading" class="loading" style="display: none;"><i class="fas fa-spinner fa-spin"></i> Syncing...</div>
-        
-        <div id="content" style="display: block;">
-            <!-- Tab Navigation -->
-            <div class="tab-container">
-                <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('critical')">🔴 Critical</button>
-                <button class="tab-btn" onclick="switchTab('documents')">📄 Documents</button>
-                <button class="tab-btn" onclick="switchTab('financial')">💳 Financial</button>
-                <button class="tab-btn" onclick="switchTab('employer')">👔 Employer</button>
-                <button class="tab-btn" onclick="switchTab('school')">📚 School</button>
-                <button class="tab-btn" onclick="switchTab('home')">🏠 Home</button>
-                <button class="tab-btn" onclick="switchTab('medical')">⚕️ Medical</button>
-                <button class="tab-btn" onclick="switchTab('india')">🇮🇳 India</button>
-                <button class="tab-btn" onclick="switchTab('packing')">🎒 Packing</button>
-                <button class="tab-btn" onclick="switchTab('final')">✅ Final</button>
+        <div class="content">
+            <div style="text-align: right; padding: 10px 20px; border-bottom: 1px solid #e5e7eb;">
+                <button onclick="clearFirebase()" style="padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Reset Firebase</button>
             </div>
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="tab-view active">
+                <!-- Task Status Dashboard -->
+                <div class="dashboard-section">
+                    <div class="section-title">📊 Task Status Overview</div>
+                    <div class="stats-row">
+                        <div class="stat-card completed">
+                            <div class="stat-number" id="stat-completed">0</div>
+                            <div class="stat-label">✅ Completed</div>
+                        </div>
+                        <div class="stat-card in-progress">
+                            <div class="stat-number" id="stat-in-progress">0</div>
+                            <div class="stat-label">🔄 In Progress</div>
+                        </div>
+                        <div class="stat-card waiting">
+                            <div class="stat-number" id="stat-waiting">0</div>
+                            <div class="stat-label">⏳ Waiting</div>
+                        </div>
+                        <div class="stat-card not-started">
+                            <div class="stat-number" id="stat-not-started">0</div>
+                            <div class="stat-label">📋 Not Started</div>
+                        </div>
+                        <div class="stat-card overdue">
+                            <div class="stat-number" id="stat-overdue">0</div>
+                            <div class="stat-label">⚠️ Overdue</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="stat-total">0</div>
+                            <div class="stat-label">📝 Total</div>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- DASHBOARD TAB -->
-            <div id="dashboard" class="tab-content active">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div class="stat-card">
-                        <div class="stat-number" id="completedCount">0</div>
-                        <div class="stat-label">✅ Completed</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <div class="stat-number" id="remainingCount">0</div>
-                        <div class="stat-label">🔄 In Progress</div>
-                    </div>
-                    <div class="stat-card waiting-card">
-                        <div class="stat-number" id="waitingCount">0</div>
-                        <div class="stat-label">⏳ Waiting</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);">
-                        <div class="stat-number" id="totalCount">0</div>
-                        <div class="stat-label">📋 Total Tasks</div>
+                <!-- Assignee Dashboard -->
+                <div class="dashboard-section">
+                    <div class="section-title">👥 Tasks by Assignee</div>
+                    <div class="stats-row">
+                        <div class="stat-card siva">
+                            <div class="stat-number" id="stat-siva">0</div>
+                            <div class="stat-label">👨 Siva</div>
+                        </div>
+                        <div class="stat-card priya">
+                            <div class="stat-number" id="stat-priya">0</div>
+                            <div class="stat-label">👩 Priya</div>
+                        </div>
+                        <div class="stat-card both">
+                            <div class="stat-number" id="stat-both">0</div>
+                            <div class="stat-label">👥 Both</div>
+                        </div>
+                        <div class="stat-card not-assigned">
+                            <div class="stat-number" id="stat-not-assigned">0</div>
+                            <div class="stat-label">❓ Not Assigned</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- CATEGORY TABS -->
-            <div id="critical" class="tab-content"></div>
-            <div id="documents" class="tab-content"></div>
-            <div id="financial" class="tab-content"></div>
-            <div id="employer" class="tab-content"></div>
-            <div id="school" class="tab-content"></div>
-            <div id="home" class="tab-content"></div>
-            <div id="medical" class="tab-content"></div>
-            <div id="india" class="tab-content"></div>
-            <div id="packing" class="tab-content"></div>
-            <div id="final" class="tab-content"></div>
+            <!-- CATEGORIES -->
+            <div id="critical" class="tab-view"></div>
+            <div id="documents" class="tab-view"></div>
+            <div id="financial" class="tab-view"></div>
+            <div id="employer" class="tab-view"></div>
+            <div id="school" class="tab-view"></div>
+            <div id="home" class="tab-view"></div>
+            <div id="medical" class="tab-view"></div>
+            <div id="india" class="tab-view"></div>
+            <div id="packing" class="tab-view"></div>
+            <div id="final" class="tab-view"></div>
         </div>
     </div>
 
     <script>
-        let databaseURL = '';
         let tasks = [];
         let nextId = 1;
-        
-        // Hardcoded Firebase Configuration
+        let databaseURL = 'https://travel-checklist-a6682-default-rtdb.firebaseio.com';
+
         const firebaseConfig = {
-            apiKey: 'AIzaSyBaKE82AGYYb4aYNHcbU345mf7lzTFEZmI',
-            authDomain: 'travel-checklist-a6682.firebaseapp.com',
-            databaseURL: 'https://travel-checklist-a6682-default-rtdb.firebaseio.com',
-            projectId: 'travel-checklist-a6682'
+            databaseURL: 'https://travel-checklist-a6682-default-rtdb.firebaseio.com'
         };
-        
+
         const categoryMap = {
-            'critical': 'CRITICAL - DO THIS FIRST',
-            'documents': 'DOCUMENTS TO PREPARE',
-            'financial': 'FINANCIAL & BANKING',
-            'employer': 'EMPLOYER & WORK',
-            'school': 'SCHOOL & FAMILY',
-            'home': 'HOME PREPARATION',
-            'medical': 'MEDICAL PREPARATIONS',
-            'india': 'INDIA PREPARATIONS',
-            'packing': 'PACKING CHECKLIST',
-            'final': 'FINAL PREPARATIONS'
+            'critical': '🔴 CRITICAL - DO THIS FIRST',
+            'documents': '📄 DOCUMENTS TO PREPARE',
+            'financial': '💳 FINANCIAL & BANKING',
+            'employer': '👔 EMPLOYER & WORK',
+            'school': '📚 SCHOOL & FAMILY',
+            'home': '🏠 HOME PREPARATION',
+            'medical': '⚕️ MEDICAL PREPARATIONS',
+            'india': '🇮🇳 INDIA PREPARATIONS',
+            'packing': '🎒 PACKING CHECKLIST',
+            'final': '✅ FINAL PREPARATIONS'
         };
 
-        function connectToFirebase() {
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const authDomain = document.getElementById('authDomain').value.trim();
-            const databaseURLInput = document.getElementById('databaseURL').value.trim();
-            const projectId = document.getElementById('projectId').value.trim();
-
-            if (!apiKey || !authDomain || !databaseURLInput || !projectId) {
-                alert('Please fill in all Firebase config fields');
-                return;
-            }
-
-            databaseURL = databaseURLInput.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
-            testConnection();
-        }
-
-        function testConnection() {
-            document.getElementById('loading').style.display = 'block';
-            
-            const timeout = setTimeout(() => {
-                console.log('Connection timeout, loading default tasks');
-                loadDefaultTasks();
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                displayTasks();
-                startSyncInterval();
-            }, 5000);
-
-            fetch(databaseURL + '/tasks.json')
-                .then(response => {
-                    clearTimeout(timeout);
-                    if (response.ok) {
-                        return response.json();
-                    } else if (response.status === 404) {
-                        return {};
-                    } else {
-                        throw new Error('Connection failed: ' + response.status);
-                    }
-                })
-                .then(data => {
-                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                        tasks = Object.values(data).filter(t => t && typeof t === 'object');
-                        nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
-                    } else {
-                        loadDefaultTasks();
-                    }
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
-                    displayTasks();
-                    startSyncInterval();
-                })
-                .catch(error => {
-                    clearTimeout(timeout);
-                    console.error('Firebase error:', error);
-                    loadDefaultTasks();
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('content').style.display = 'block';
-                    displayTasks();
-                    startSyncInterval();
-                });
+        function isOverdue(dueDate) {
+            if (!dueDate) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const due = new Date(dueDate);
+            return due < today;
         }
 
         function loadDefaultTasks() {
             tasks = [
-                // CRITICAL - 14 tasks
-                { id: 1, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify I-94 validity for all family members', status: 'not-started', dueDate: '' },
-                { id: 2, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Check USCIS SEVIS database and CBP I-94 records', status: 'not-started', dueDate: '' },
-                { id: 3, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Apply for I-131 (Advance Parole) if I-94 expired', status: 'not-started', dueDate: '' },
-                { id: 4, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm H1B is valid and hasn\'t expired', status: 'not-started', dueDate: '' },
-                { id: 5, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm wife\'s and son\'s H4 validity', status: 'not-started', dueDate: '' },
-                { id: 6, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify wife\'s EAD Card is valid', status: 'not-started', dueDate: '' },
-                { id: 7, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Verify all passports are valid (6+ months)', status: 'not-started', dueDate: '' },
-                { id: 8, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Get India visa for you, wife, and son', status: 'not-started', dueDate: '' },
-                { id: 9, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm daughter has US passport', status: 'not-started', dueDate: '' },
-                { id: 10, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Clarify H1B extension or initial visa interview', status: 'not-started', dueDate: '' },
-                { id: 11, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Gather employment documents (offer letter, pay stubs)', status: 'not-started', dueDate: '' },
-                { id: 12, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Collect I-797 approval notices', status: 'not-started', dueDate: '' },
-                { id: 13, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Confirm visa interview date, time, location', status: 'not-started', dueDate: '' },
-                { id: 14, category: 'CRITICAL - DO THIS FIRST', title: '🔴 Prepare interview answers and documents', status: 'not-started', dueDate: '' },
-
-                // DOCUMENTS - 11 tasks
-                { id: 15, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect all passports (valid 6+ months)', status: 'not-started', dueDate: '' },
-                { id: 16, category: 'DOCUMENTS TO PREPARE', title: '📄 Copy all stamped visa pages', status: 'not-started', dueDate: '' },
-                { id: 17, category: 'DOCUMENTS TO PREPARE', title: '📄 Print I-94 records from CBP website', status: 'not-started', dueDate: '' },
-                { id: 18, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect I-797 forms (H1B and H4)', status: 'not-started', dueDate: '' },
-                { id: 19, category: 'DOCUMENTS TO PREPARE', title: '📄 Carry wife\'s original EAD card', status: 'not-started', dueDate: '' },
-                { id: 20, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect birth certificates for all', status: 'not-started', dueDate: '' },
-                { id: 21, category: 'DOCUMENTS TO PREPARE', title: '📄 Get certified copy of marriage certificate', status: 'not-started', dueDate: '' },
-                { id: 22, category: 'DOCUMENTS TO PREPARE', title: '📄 Print flight tickets (6 copies)', status: 'not-started', dueDate: '' },
-                { id: 23, category: 'DOCUMENTS TO PREPARE', title: '📄 Print hotel reservations', status: 'not-started', dueDate: '' },
-                { id: 24, category: 'DOCUMENTS TO PREPARE', title: '📄 Print travel insurance policy', status: 'not-started', dueDate: '' },
-                { id: 25, category: 'DOCUMENTS TO PREPARE', title: '📄 Collect medical records and vaccination records', status: 'not-started', dueDate: '' },
-
-                // FINANCIAL - 5 tasks
-                { id: 26, category: 'FINANCIAL & BANKING', title: '💳 Inform banks about travel dates', status: 'not-started', dueDate: '' },
-                { id: 27, category: 'FINANCIAL & BANKING', title: '💳 Get printed bank statements (3-6 months)', status: 'not-started', dueDate: '' },
-                { id: 28, category: 'FINANCIAL & BANKING', title: '💳 Carry 2-3 credit cards (different companies)', status: 'not-started', dueDate: '' },
-                { id: 29, category: 'FINANCIAL & BANKING', title: '💳 Exchange USD to INR', status: 'not-started', dueDate: '' },
-                { id: 30, category: 'FINANCIAL & BANKING', title: '💳 Notify wife\'s employer about EAD travel', status: 'not-started', dueDate: '' },
-
-                // EMPLOYER - 5 tasks
-                { id: 31, category: 'EMPLOYER & WORK', title: '👔 Notify your employer of travel dates', status: 'not-started', dueDate: '' },
-                { id: 32, category: 'EMPLOYER & WORK', title: '👔 Confirm return ticket to resume work immediately', status: 'not-started', dueDate: '' },
-                { id: 33, category: 'EMPLOYER & WORK', title: '👔 Get employer letter confirming employment', status: 'not-started', dueDate: '' },
-                { id: 34, category: 'EMPLOYER & WORK', title: '👔 Wife: Notify your employer about travel', status: 'not-started', dueDate: '' },
-                { id: 35, category: 'EMPLOYER & WORK', title: '👔 Wife: Get employment letter from company', status: 'not-started', dueDate: '' },
-
-                // SCHOOL - 4 tasks
-                { id: 36, category: 'SCHOOL & FAMILY', title: '📚 Get official letter from school confirming grade', status: 'not-started', dueDate: '' },
-                { id: 37, category: 'SCHOOL & FAMILY', title: '📚 Collect homework/assignments for missed dates', status: 'not-started', dueDate: '' },
-                { id: 38, category: 'SCHOOL & FAMILY', title: '📚 Contact school about re-entry procedures', status: 'not-started', dueDate: '' },
-                { id: 39, category: 'SCHOOL & FAMILY', title: '📚 Get required immunization records', status: 'not-started', dueDate: '' },
-
-                // HOME - 5 tasks
-                { id: 40, category: 'HOME PREPARATION', title: '🏠 Arrange mail hold with USPS', status: 'not-started', dueDate: '' },
-                { id: 41, category: 'HOME PREPARATION', title: '🏠 Lock all windows and doors', status: 'not-started', dueDate: '' },
-                { id: 42, category: 'HOME PREPARATION', title: '🏠 Set thermostat appropriately', status: 'not-started', dueDate: '' },
-                { id: 43, category: 'HOME PREPARATION', title: '🏠 Ask neighbor to check on home', status: 'not-started', dueDate: '' },
-                { id: 44, category: 'HOME PREPARATION', title: '🏠 Take photos of valuable items for insurance', status: 'not-started', dueDate: '' },
-
-                // MEDICAL - 5 tasks
-                { id: 45, category: 'MEDICAL PREPARATIONS', title: '⚕️ Refill all prescriptions', status: 'not-started', dueDate: '' },
-                { id: 46, category: 'MEDICAL PREPARATIONS', title: '⚕️ Visit dentist for checkup', status: 'not-started', dueDate: '' },
-                { id: 47, category: 'MEDICAL PREPARATIONS', title: '⚕️ Visit doctor for checkup', status: 'not-started', dueDate: '' },
-                { id: 48, category: 'MEDICAL PREPARATIONS', title: '⚕️ Get doctor\'s letter for medications', status: 'not-started', dueDate: '' },
-                { id: 49, category: 'MEDICAL PREPARATIONS', title: '⚕️ Research hospitals near India destination', status: 'not-started', dueDate: '' },
-
-                // INDIA - 10 tasks
-                { id: 50, category: 'INDIA PREPARATIONS', title: '🇮🇳 Book accommodations (hotel/family home)', status: 'not-started', dueDate: '' },
-                { id: 51, category: 'INDIA PREPARATIONS', title: '🇮🇳 Arrange transportation from airport', status: 'not-started', dueDate: '' },
-                { id: 52, category: 'INDIA PREPARATIONS', title: '🇮🇳 Confirm visa interview appointment details', status: 'not-started', dueDate: '' },
-                { id: 53, category: 'INDIA PREPARATIONS', title: '🇮🇳 Check weather forecast for India', status: 'not-started', dueDate: '' },
-                { id: 54, category: 'INDIA PREPARATIONS', title: '🇮🇳 Get Indian phone SIM or roaming plan', status: 'not-started', dueDate: '' },
-                { id: 55, category: 'INDIA PREPARATIONS', title: '🇮🇳 Notify family in India of arrival details', status: 'not-started', dueDate: '' },
-                { id: 56, category: 'INDIA PREPARATIONS', title: '🇮🇳 Purchase travel insurance', status: 'not-started', dueDate: '' },
-                { id: 57, category: 'INDIA PREPARATIONS', title: '🇮🇳 Print insurance policy and save digital copy', status: 'not-started', dueDate: '' },
-                { id: 58, category: 'INDIA PREPARATIONS', title: '🇮🇳 Convert USD to INR before departure', status: 'not-started', dueDate: '' },
-                { id: 59, category: 'INDIA PREPARATIONS', title: '🇮🇳 Research current exchange rates', status: 'not-started', dueDate: '' },
-
-                // PACKING - 11 tasks
-                { id: 60, category: 'PACKING CHECKLIST', title: '🎒 Pack copies of all important documents', status: 'not-started', dueDate: '' },
-                { id: 61, category: 'PACKING CHECKLIST', title: '🎒 Pack passports (originals)', status: 'not-started', dueDate: '' },
-                { id: 62, category: 'PACKING CHECKLIST', title: '🎒 Pack I-94 cards (originals)', status: 'not-started', dueDate: '' },
-                { id: 63, category: 'PACKING CHECKLIST', title: '🎒 Pack medications (full supply)', status: 'not-started', dueDate: '' },
-                { id: 64, category: 'PACKING CHECKLIST', title: '🎒 Pack phone chargers and power bank', status: 'not-started', dueDate: '' },
-                { id: 65, category: 'PACKING CHECKLIST', title: '🎒 Pack credit cards and cash ($500)', status: 'not-started', dueDate: '' },
-                { id: 66, category: 'PACKING CHECKLIST', title: '🎒 Pack winter/summer clothes for India', status: 'not-started', dueDate: '' },
-                { id: 67, category: 'PACKING CHECKLIST', title: '🎒 Pack toiletries and first aid kit', status: 'not-started', dueDate: '' },
-                { id: 68, category: 'PACKING CHECKLIST', title: '🎒 Pack formal wear for visa interview', status: 'not-started', dueDate: '' },
-                { id: 69, category: 'PACKING CHECKLIST', title: '🎒 Pack son\'s study materials', status: 'not-started', dueDate: '' },
-                { id: 70, category: 'PACKING CHECKLIST', title: '🎒 Pack universal adapter for India', status: 'not-started', dueDate: '' },
-
-                // FINAL - 5 tasks
-                { id: 71, category: 'FINAL PREPARATIONS', title: '✅ Reconfirm flight on Etihad website', status: 'not-started', dueDate: '' },
-                { id: 72, category: 'FINAL PREPARATIONS', title: '✅ Register with US Embassy using STEP program', status: 'not-started', dueDate: '' },
-                { id: 73, category: 'FINAL PREPARATIONS', title: '✅ Arrive airport 3 hours before departure', status: 'not-started', dueDate: '' },
-                { id: 74, category: 'FINAL PREPARATIONS', title: '✅ Confirm Etihad return flight (Dec 15)', status: 'not-started', dueDate: '' },
-                { id: 75, category: 'FINAL PREPARATIONS', title: '✅ Reconfirm return flight 24 hours before departure', status: 'not-started', dueDate: '' }
+                { id: 1, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Verify I-94 validity for all family members', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 2, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Check USCIS SEVIS database and CBP I-94 records', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 3, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Apply for I-131 (Advance Parole) if I-94 expired', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 4, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Confirm H1B is valid and hasn\'t expired', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 5, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Confirm wife\'s and son\'s H4 validity', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 6, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Verify wife\'s EAD Card is valid', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 7, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Verify all passports are valid (6+ months)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 8, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Get India visa for you, wife, and son', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 9, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Confirm daughter has US passport', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 10, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Clarify H1B extension or initial visa interview', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 11, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Gather employment documents (offer letter, pay stubs)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 12, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Collect I-797 approval notices', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 13, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Confirm visa interview date, time, location', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 14, category: '🔴 CRITICAL - DO THIS FIRST', title: 'Prepare interview answers and documents', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 15, category: '📄 DOCUMENTS TO PREPARE', title: 'Collect all passports (valid 6+ months)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 16, category: '📄 DOCUMENTS TO PREPARE', title: 'Copy all stamped visa pages', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 17, category: '📄 DOCUMENTS TO PREPARE', title: 'Print I-94 records from CBP website', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 18, category: '📄 DOCUMENTS TO PREPARE', title: 'Collect I-797 forms (H1B and H4)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 19, category: '📄 DOCUMENTS TO PREPARE', title: 'Carry wife\'s original EAD card', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 20, category: '📄 DOCUMENTS TO PREPARE', title: 'Collect birth certificates for all', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 21, category: '📄 DOCUMENTS TO PREPARE', title: 'Get certified copy of marriage certificate', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 22, category: '📄 DOCUMENTS TO PREPARE', title: 'Print flight tickets (6 copies)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 23, category: '📄 DOCUMENTS TO PREPARE', title: 'Print hotel reservations', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 24, category: '📄 DOCUMENTS TO PREPARE', title: 'Print travel insurance policy', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 25, category: '📄 DOCUMENTS TO PREPARE', title: 'Collect medical records and vaccination records', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 26, category: '💳 FINANCIAL & BANKING', title: 'Inform banks about travel dates', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 27, category: '💳 FINANCIAL & BANKING', title: 'Get printed bank statements (3-6 months)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 28, category: '💳 FINANCIAL & BANKING', title: 'Carry 2-3 credit cards (different companies)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 29, category: '💳 FINANCIAL & BANKING', title: 'Exchange USD to INR', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 30, category: '💳 FINANCIAL & BANKING', title: 'Notify wife\'s employer about EAD travel', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 31, category: '👔 EMPLOYER & WORK', title: 'Notify your employer of travel dates', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 32, category: '👔 EMPLOYER & WORK', title: 'Confirm return ticket to resume work immediately', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 33, category: '👔 EMPLOYER & WORK', title: 'Get employer letter confirming employment', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 34, category: '👔 EMPLOYER & WORK', title: 'Wife: Notify your employer about travel', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 35, category: '👔 EMPLOYER & WORK', title: 'Wife: Get employment letter from company', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 36, category: '📚 SCHOOL & FAMILY', title: 'Get official letter from school confirming grade', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 37, category: '📚 SCHOOL & FAMILY', title: 'Collect homework/assignments for missed dates', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 38, category: '📚 SCHOOL & FAMILY', title: 'Contact school about re-entry procedures', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 39, category: '📚 SCHOOL & FAMILY', title: 'Get required immunization records', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 40, category: '🏠 HOME PREPARATION', title: 'Arrange mail hold with USPS', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 41, category: '🏠 HOME PREPARATION', title: 'Lock all windows and doors', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 42, category: '🏠 HOME PREPARATION', title: 'Set thermostat appropriately', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 43, category: '🏠 HOME PREPARATION', title: 'Ask neighbor to check on home', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 44, category: '🏠 HOME PREPARATION', title: 'Take photos of valuable items for insurance', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 45, category: '⚕️ MEDICAL PREPARATIONS', title: 'Refill all prescriptions', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 46, category: '⚕️ MEDICAL PREPARATIONS', title: 'Visit dentist for checkup', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 47, category: '⚕️ MEDICAL PREPARATIONS', title: 'Visit doctor for checkup', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 48, category: '⚕️ MEDICAL PREPARATIONS', title: 'Get doctor\'s letter for medications', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 49, category: '⚕️ MEDICAL PREPARATIONS', title: 'Research hospitals near India destination', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 50, category: '🇮🇳 INDIA PREPARATIONS', title: 'Book accommodations (hotel/family home)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 51, category: '🇮🇳 INDIA PREPARATIONS', title: 'Arrange transportation from airport', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 52, category: '🇮🇳 INDIA PREPARATIONS', title: 'Confirm visa interview appointment details', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 53, category: '🇮🇳 INDIA PREPARATIONS', title: 'Check weather forecast for India', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 54, category: '🇮🇳 INDIA PREPARATIONS', title: 'Get Indian phone SIM or roaming plan', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 55, category: '🇮🇳 INDIA PREPARATIONS', title: 'Notify family in India of arrival details', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 56, category: '🇮🇳 INDIA PREPARATIONS', title: 'Purchase travel insurance', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 57, category: '🇮🇳 INDIA PREPARATIONS', title: 'Print insurance policy and save digital copy', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 58, category: '🇮🇳 INDIA PREPARATIONS', title: 'Convert USD to INR before departure', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 59, category: '🇮🇳 INDIA PREPARATIONS', title: 'Research current exchange rates', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 60, category: '🎒 PACKING CHECKLIST', title: 'Pack copies of all important documents', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 61, category: '🎒 PACKING CHECKLIST', title: 'Pack passports (originals)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 62, category: '🎒 PACKING CHECKLIST', title: 'Pack I-94 cards (originals)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 63, category: '🎒 PACKING CHECKLIST', title: 'Pack medications (full supply)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 64, category: '🎒 PACKING CHECKLIST', title: 'Pack phone chargers and power bank', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 65, category: '🎒 PACKING CHECKLIST', title: 'Pack credit cards and cash ($500)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 66, category: '🎒 PACKING CHECKLIST', title: 'Pack winter/summer clothes for India', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 67, category: '🎒 PACKING CHECKLIST', title: 'Pack toiletries and first aid kit', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 68, category: '🎒 PACKING CHECKLIST', title: 'Pack formal wear for visa interview', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 69, category: '🎒 PACKING CHECKLIST', title: 'Pack son\'s study materials', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 70, category: '🎒 PACKING CHECKLIST', title: 'Pack universal adapter for India', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 71, category: '✅ FINAL PREPARATIONS', title: 'Reconfirm flight on Etihad website', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 72, category: '✅ FINAL PREPARATIONS', title: 'Register with US Embassy using STEP program', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 73, category: '✅ FINAL PREPARATIONS', title: 'Arrive airport 3 hours before departure', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 74, category: '✅ FINAL PREPARATIONS', title: 'Confirm Etihad return flight (Dec 15)', assigned: '', status: 'not-started', dueDate: '' },
+                { id: 75, category: '✅ FINAL PREPARATIONS', title: 'Reconfirm return flight 24 hours before departure', assigned: '', status: 'not-started', dueDate: '' }
             ];
             nextId = 76;
         }
@@ -333,107 +490,167 @@
             if (!databaseURL) return;
             const tasksObj = {};
             tasks.forEach((task, index) => { tasksObj[index] = task; });
-            fetch(databaseURL + '/tasks.json', { 
-                method: 'PUT', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(tasksObj) 
-            })
-                .then(r => {
-                    if (r.ok) console.log('✅ Saved to Firebase');
-                    else console.log('Save: HTTP ' + r.status);
-                })
-                .catch(e => console.log('Save error:', e.message));
+            fetch(databaseURL + '/tasks.json', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(tasksObj)
+            }).catch(e => console.log('Save error:', e));
+        }
+
+        function displayDashboard() {
+            const stats = {
+                completed: tasks.filter(t => t.status === 'completed').length,
+                'in-progress': tasks.filter(t => t.status === 'in-progress').length,
+                waiting: tasks.filter(t => t.status === 'waiting').length,
+                'not-started': tasks.filter(t => t.status === 'not-started').length,
+                overdue: tasks.filter(t => isOverdue(t.dueDate) && t.status !== 'completed').length,
+                siva: tasks.filter(t => t.assigned === 'Siva').length,
+                priya: tasks.filter(t => t.assigned === 'Priya').length,
+                both: tasks.filter(t => t.assigned === 'Both').length,
+                'not-assigned': tasks.filter(t => !t.assigned || t.assigned === '').length
+            };
+
+            document.getElementById('stat-completed').textContent = stats.completed;
+            document.getElementById('stat-in-progress').textContent = stats['in-progress'];
+            document.getElementById('stat-waiting').textContent = stats.waiting;
+            document.getElementById('stat-not-started').textContent = stats['not-started'];
+            document.getElementById('stat-overdue').textContent = stats.overdue;
+            document.getElementById('stat-total').textContent = tasks.length;
+            document.getElementById('stat-siva').textContent = stats.siva;
+            document.getElementById('stat-priya').textContent = stats.priya;
+            document.getElementById('stat-both').textContent = stats.both;
+            document.getElementById('stat-not-assigned').textContent = stats['not-assigned'];
         }
 
         function displayTasks() {
-            const completed = tasks.filter(t => t.status === 'completed').length;
-            const waiting = tasks.filter(t => t.status === 'waiting').length;
-            const inProgress = tasks.filter(t => t.status === 'in-progress').length;
+            console.log('displayTasks called. Total tasks:', tasks.length);
             
-            document.getElementById('completedCount').textContent = completed;
-            document.getElementById('waitingCount').textContent = waiting;
-            document.getElementById('remainingCount').textContent = inProgress;
-            document.getElementById('totalCount').textContent = tasks.length;
-
             Object.keys(categoryMap).forEach(tab => {
                 const categoryName = categoryMap[tab];
-                const categoryTasks = tasks.filter(t => t.category === categoryName);
                 const container = document.getElementById(tab);
-                
-                // Save input value before clearing
+
+                if (!container) {
+                    console.error('Container not found for tab:', tab);
+                    return;
+                }
+
+                const categoryTasks = tasks.filter(t => t.category === categoryName);
+                console.log(`Category ${categoryName}: ${categoryTasks.length} tasks`);
+
+                // Save input value if exists
                 const inputId = 'newTask_' + tab;
-                const savedInputValue = document.getElementById(inputId)?.value || '';
-                
-                container.innerHTML = '';
+                const existingInput = document.getElementById(inputId);
+                const savedInputValue = existingInput ? existingInput.value : '';
 
-                const card = document.createElement('div');
-                card.className = 'category-card';
-                card.innerHTML = `<div class="category-title">${categoryName}</div>`;
-
-                // Add form to create new task (at TOP)
-                const formContainer = document.createElement('div');
-                formContainer.className = 'add-item-form';
-                formContainer.innerHTML = `
-                    <input type="text" id="newTask_${tab}" placeholder="Add new task..." value="${savedInputValue}" />
-                    <button onclick="addNewTask('${tab}', '${categoryName}')">➕ Add Task</button>
-                `;
-                card.appendChild(formContainer);
-
-                // Display existing tasks
-                categoryTasks.forEach((task) => {
-                    const taskEl = document.createElement('div');
-                    taskEl.className = 'task-item';
-                    taskEl.innerHTML = `
-                        <div class="task-title">${task.title}</div>
-                        <div class="task-controls">
-                            <select onchange="updateStatus(${task.id}, this.value)">
-                                <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
-                                <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-                                <option value="waiting" ${task.status === 'waiting' ? 'selected' : ''}>Waiting</option>
-                                <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
-                            </select>
-                            <input type="date" value="${task.dueDate || ''}" onchange="updateDate(${task.id}, this.value)">
-                            <button class="btn-delete" onclick="deleteTask(${task.id})">Delete</button>
+                // Build complete HTML
+                let html = `
+                    <div class="add-task-form">
+                        <div style="font-weight: 600; margin-bottom: 10px; color: #666;">➕ Add New Task</div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" id="newTask_${tab}" placeholder="Task name..." value="${savedInputValue}" />
+                            </div>
+                            <div class="form-group">
+                                <label>Due Date</label>
+                                <input type="date" id="newDate_${tab}" />
+                            </div>
+                            <button class="btn-add" onclick="addTask('${tab}', '${categoryName}')">Add</button>
                         </div>
-                    `;
-                    card.appendChild(taskEl);
-                });
+                    </div>
+                    <div class="category-header">${categoryName}</div>
+                `;
 
-                container.appendChild(card);
+                if (categoryTasks.length === 0) {
+                    html += '<div style="text-align: center; padding: 30px; color: #999;">No tasks in this category</div>';
+                } else {
+                    categoryTasks.forEach(task => {
+                        const isOverdueTask = isOverdue(task.dueDate) && task.status !== 'completed';
+                        const assignedBadge = task.assigned 
+                            ? `<span class="task-badge ${task.assigned.toLowerCase()}">${task.assigned === 'Siva' ? '👨' : task.assigned === 'Priya' ? '👩' : '👥'} ${task.assigned}</span>` 
+                            : '<span class="task-badge not-assigned">❓ Not Assigned</span>';
+
+                        html += `
+                            <div class="task-item ${task.status === 'completed' ? 'completed' : ''} ${isOverdueTask ? 'overdue' : ''}">
+                                <div class="task-header">
+                                    <div class="task-title">${task.title}</div>
+                                    ${assignedBadge}
+                                </div>
+                                ${task.dueDate ? `<div class="task-meta ${isOverdueTask ? 'overdue' : ''}">📅 ${new Date(task.dueDate).toLocaleDateString()} ${isOverdueTask ? '⚠️ OVERDUE' : ''}</div>` : ''}
+                                <div class="task-controls">
+                                    <select onchange="updateStatus(${task.id}, this.value)">
+                                        <option value="not-started" ${task.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                                        <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                        <option value="waiting" ${task.status === 'waiting' ? 'selected' : ''}>Waiting</option>
+                                        <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
+                                    </select>
+                                    <input type="date" value="${task.dueDate || ''}" onchange="updateDate(${task.id}, this.value)">
+                                    <select onchange="updateAssigned(${task.id}, this.value)">
+                                        <option value="">❓ Not Assigned</option>
+                                        <option value="Siva" ${task.assigned === 'Siva' ? 'selected' : ''}>👨 Siva</option>
+                                        <option value="Priya" ${task.assigned === 'Priya' ? 'selected' : ''}>👩 Priya</option>
+                                        <option value="Both" ${task.assigned === 'Both' ? 'selected' : ''}>👥 Both</option>
+                                    </select>
+                                    <button class="btn-delete" onclick="deleteTask(${task.id})" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+
+                container.innerHTML = html;
             });
+
+            displayDashboard();
         }
 
-        function addNewTask(tab, categoryName) {
-            const inputId = 'newTask_' + tab;
-            const taskTitle = document.getElementById(inputId).value.trim();
-            
-            if (!taskTitle) {
+        function addTask(tab, categoryName) {
+            const title = document.getElementById(`newTask_${tab}`).value.trim();
+            const dueDate = document.getElementById(`newDate_${tab}`).value;
+
+            if (!title) {
                 alert('Please enter a task title');
                 return;
             }
 
-            const newTask = {
+            tasks.push({
                 id: nextId++,
                 category: categoryName,
-                title: taskTitle,
+                title,
+                assigned: '',
                 status: 'not-started',
-                dueDate: ''
-            };
+                dueDate
+            });
 
-            tasks.push(newTask);
             saveTasks();
             displayTasks();
-            document.getElementById(inputId).value = '';
         }
 
         function updateStatus(id, status) {
             const task = tasks.find(t => t.id === id);
-            if (task) { task.status = status; saveTasks(); displayTasks(); }
+            if (task) {
+                task.status = status;
+                saveTasks();
+                displayTasks();
+            }
         }
 
         function updateDate(id, date) {
             const task = tasks.find(t => t.id === id);
-            if (task) { task.dueDate = date; saveTasks(); }
+            if (task) {
+                task.dueDate = date;
+                saveTasks();
+                displayTasks();
+            }
+        }
+
+        function updateAssigned(id, assigned) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.assigned = assigned;
+                saveTasks();
+                displayTasks();
+            }
         }
 
         function deleteTask(id) {
@@ -444,63 +661,105 @@
             }
         }
 
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tab).classList.add('active');
-            event.target.classList.add('active');
+        function clearFirebase() {
+            if (confirm('Clear all Firebase data and rebuild with default tasks? This cannot be undone.')) {
+                fetch(databaseURL + '/tasks.json', {
+                    method: 'DELETE'
+                }).then(() => {
+                    console.log('Firebase cleared');
+                    loadDefaultTasks();
+                    displayTasks();
+                    saveTasks();
+                    alert('Firebase cleared! Rebuilding with fresh data...');
+                }).catch(e => console.log('Error clearing Firebase:', e));
+            }
         }
 
-        function startSyncInterval() {
-            let lastSync = JSON.stringify(tasks);
+        function switchView(tab) {
+            console.log('Switching to tab:', tab);
             
+            // Hide all views
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            
+            // Deactivate all buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            // Show selected view
+            const view = document.getElementById(tab);
+            if (view) {
+                view.classList.add('active');
+            }
+            
+            // Activate clicked button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            // Force refresh by redisplaying tasks
+            console.log('Refreshing task display...');
+            displayTasks();
+        }
+
+        window.addEventListener('load', () => {
+            console.log('Page loading...');
+            
+            // 1. Load default tasks immediately
+            loadDefaultTasks();
+            console.log('Default tasks loaded:', tasks.length);
+            
+            // 2. Display them right away
+            displayTasks();
+            console.log('Tasks displayed');
+            
+            // 3. Ensure Firebase URL is clean
+            databaseURL = databaseURL.replace(/\/tasks\.json$/, '');
+            console.log('Firebase URL ready:', databaseURL);
+            
+            // Try to load from Firebase (non-blocking)
+            fetch(databaseURL + '/tasks.json')
+                .then(r => r.json())
+                .then(data => {
+                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                        const firebaseTasks = Object.values(data).filter(t => t && typeof t === 'object');
+                        
+                        // Check if Firebase data has category field
+                        const hasCategory = firebaseTasks.some(t => t.category && t.category.includes('🔴'));
+                        
+                        if (firebaseTasks.length > 0 && hasCategory) {
+                            console.log('Firebase tasks loaded:', firebaseTasks.length);
+                            tasks = firebaseTasks;
+                            nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
+                            displayTasks();
+                        } else {
+                            console.log('Firebase data outdated. Using default tasks.');
+                            // Keep using default tasks - Firebase is stale
+                        }
+                    }
+                })
+                .catch(e => console.log('Firebase load skipped (offline is OK)'));
+
+            // Continuous sync every 5 seconds
             setInterval(() => {
                 if (databaseURL) {
                     fetch(databaseURL + '/tasks.json')
                         .then(r => r.json())
                         .then(data => {
-                            if (data && typeof data === 'object') {
-                                const remoteTasks = Object.values(data).filter(t => t && typeof t === 'object');
-                                const currentSync = JSON.stringify(remoteTasks);
+                            if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+                                const firebaseTasks = Object.values(data).filter(t => t && typeof t === 'object');
                                 
-                                // Only update if data changed
-                                if (currentSync !== lastSync) {
-                                    tasks = remoteTasks;
+                                // Only use Firebase data if it has proper category field
+                                const hasCategory = firebaseTasks.some(t => t.category && t.category.includes('🔴'));
+                                
+                                if (firebaseTasks.length > 0 && hasCategory) {
+                                    tasks = firebaseTasks;
                                     nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
-                                    lastSync = currentSync;
                                     displayTasks();
-                                    console.log('✅ Synced with Firebase');
                                 }
                             }
                         })
-                        .catch(e => console.log('Sync error:', e));
+                        .catch(e => null);
                 }
             }, 5000);
-        }
-
-        window.addEventListener('load', () => {
-            // Load default tasks
-            loadDefaultTasks();
-            document.getElementById('content').style.display = 'block';
-            displayTasks();
-            
-            // Initialize Firebase
-            databaseURL = firebaseConfig.databaseURL.replace(/\/$/, '').replace(/\/tasks\.json$/, '');
-            
-            // Try to fetch from Firebase
-            fetch(databaseURL + '/tasks.json')
-                .then(r => r.json())
-                .then(data => {
-                    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-                        tasks = Object.values(data).filter(t => t && typeof t === 'object');
-                        nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
-                        displayTasks();
-                        console.log('✅ Firebase loaded - ' + tasks.length + ' tasks');
-                    }
-                })
-                .catch(error => console.log('Firebase load error:', error));
-            
-            startSyncInterval();
         });
     </script>
 </body>
