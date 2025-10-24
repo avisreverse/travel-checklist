@@ -487,14 +487,38 @@
         }
 
         function saveTasks() {
-            if (!databaseURL) return;
+            if (!databaseURL) {
+                console.log('Firebase URL not ready');
+                return;
+            }
+            
+            // Validate tasks have required fields
+            const validTasks = tasks.filter(t => 
+                t && t.id && t.category && t.title && t.hasOwnProperty('assigned') && t.hasOwnProperty('status')
+            );
+            
+            if (validTasks.length === 0) {
+                console.log('No valid tasks to save');
+                return;
+            }
+            
             const tasksObj = {};
-            tasks.forEach((task, index) => { tasksObj[index] = task; });
+            validTasks.forEach((task, index) => { 
+                tasksObj[index] = task; 
+            });
+            
+            console.log('Saving', validTasks.length, 'tasks to Firebase');
+            
             fetch(databaseURL + '/tasks.json', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(tasksObj)
-            }).catch(e => console.log('Save error:', e));
+            })
+            .then(r => {
+                if (r.ok) console.log('✅ Tasks saved to Firebase');
+                else console.log('Save HTTP error:', r.status);
+            })
+            .catch(e => console.log('Save error:', e.message));
         }
 
         function displayDashboard() {
@@ -662,16 +686,20 @@
         }
 
         function clearFirebase() {
-            if (confirm('Clear all Firebase data and rebuild with default tasks? This cannot be undone.')) {
+            if (confirm('🔄 This will DELETE all Firebase data and rebuild with fresh default tasks. Continue?')) {
                 fetch(databaseURL + '/tasks.json', {
                     method: 'DELETE'
                 }).then(() => {
-                    console.log('Firebase cleared');
+                    console.log('✅ Firebase cleared');
                     loadDefaultTasks();
+                    saveTasks();  // Save the fresh defaults to Firebase
                     displayTasks();
-                    saveTasks();
-                    alert('Firebase cleared! Rebuilding with fresh data...');
-                }).catch(e => console.log('Error clearing Firebase:', e));
+                    alert('✅ Firebase cleared and rebuilt with fresh data!');
+                    location.reload();  // Reload to refresh UI
+                }).catch(e => {
+                    console.log('Error clearing Firebase:', e);
+                    alert('Could not clear Firebase. Try manually via Firebase Console.');
+                });
             }
         }
 
@@ -722,21 +750,21 @@
                     if (data && typeof data === 'object' && Object.keys(data).length > 0) {
                         const firebaseTasks = Object.values(data).filter(t => t && typeof t === 'object');
                         
-                        // Check if Firebase data has category field
-                        const hasCategory = firebaseTasks.some(t => t.category && t.category.includes('🔴'));
+                        // Check if Firebase data is NEW format (has assigned field)
+                        const isNewFormat = firebaseTasks.some(t => t.hasOwnProperty('assigned'));
                         
-                        if (firebaseTasks.length > 0 && hasCategory) {
-                            console.log('Firebase tasks loaded:', firebaseTasks.length);
+                        if (firebaseTasks.length > 0 && isNewFormat) {
+                            console.log('✅ Firebase has new format. Loading:', firebaseTasks.length, 'tasks');
                             tasks = firebaseTasks;
                             nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
                             displayTasks();
                         } else {
-                            console.log('Firebase data outdated. Using default tasks.');
-                            // Keep using default tasks - Firebase is stale
+                            console.log('⚠️ Firebase has OLD format. Using local defaults instead.');
+                            // Don't load Firebase data - keep using defaults
                         }
                     }
                 })
-                .catch(e => console.log('Firebase load skipped (offline is OK)'));
+                .catch(e => console.log('Firebase not available - using local defaults'));
 
             // Continuous sync every 5 seconds
             setInterval(() => {
@@ -747,10 +775,10 @@
                             if (data && typeof data === 'object' && Object.keys(data).length > 0) {
                                 const firebaseTasks = Object.values(data).filter(t => t && typeof t === 'object');
                                 
-                                // Only use Firebase data if it has proper category field
-                                const hasCategory = firebaseTasks.some(t => t.category && t.category.includes('🔴'));
+                                // Only sync if Firebase has NEW format
+                                const isNewFormat = firebaseTasks.some(t => t.hasOwnProperty('assigned'));
                                 
-                                if (firebaseTasks.length > 0 && hasCategory) {
+                                if (firebaseTasks.length > 0 && isNewFormat) {
                                     tasks = firebaseTasks;
                                     nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
                                     displayTasks();
