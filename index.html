@@ -573,6 +573,7 @@
         let tasks = [];
         let nextId = 1;
         let databaseURL = 'https://travel-checklist-a6682-default-rtdb.firebaseio.com';
+        let isUserTyping = false;
 
         const firebaseConfig = {
             databaseURL: 'https://travel-checklist-a6682-default-rtdb.firebaseio.com'
@@ -762,6 +763,12 @@
         function displayTasks() {
             console.log('displayTasks called. Total tasks:', tasks.length);
             
+            // Skip re-render if user is actively typing
+            if (isUserTyping) {
+                console.log('User typing - skipping re-render');
+                return;
+            }
+            
             Object.keys(categoryMap).forEach(tab => {
                 const categoryName = categoryMap[tab];
                 const container = document.getElementById(tab);
@@ -774,10 +781,13 @@
                 const categoryTasks = tasks.filter(t => t.category === categoryName);
                 console.log(`Category ${categoryName}: ${categoryTasks.length} tasks`);
 
-                // Save input value if exists
+                // Save input values before rebuilding
                 const inputId = 'newTask_' + tab;
+                const dateId = 'newDate_' + tab;
                 const existingInput = document.getElementById(inputId);
+                const existingDate = document.getElementById(dateId);
                 const savedInputValue = existingInput ? existingInput.value : '';
+                const savedDateValue = existingDate ? existingDate.value : '';
 
                 // Build complete HTML
                 let html = `
@@ -786,11 +796,11 @@
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Title</label>
-                                <input type="text" id="newTask_${tab}" placeholder="Task name..." value="${savedInputValue}" />
+                                <input type="text" id="newTask_${tab}" placeholder="Task name..." value="${savedInputValue}" onkeyup="markUserTyping()" onkeydown="markUserTyping()" onchange="unmarkUserTyping()" />
                             </div>
                             <div class="form-group">
                                 <label>Due Date</label>
-                                <input type="date" id="newDate_${tab}" />
+                                <input type="date" id="newDate_${tab}" value="${savedDateValue}" onkeyup="markUserTyping()" onkeydown="markUserTyping()" onchange="unmarkUserTyping()" />
                             </div>
                             <button class="btn-add" onclick="addTask('${tab}', '${categoryName}')">Add</button>
                         </div>
@@ -842,7 +852,22 @@
             displayDashboard();
         }
 
+        function markUserTyping() {
+            isUserTyping = true;
+        }
+
+        function unmarkUserTyping() {
+            isUserTyping = false;
+            // Re-render after user stops typing
+            setTimeout(() => {
+                if (!isUserTyping) {
+                    displayTasks();
+                }
+            }, 500);
+        }
+
         function addTask(tab, categoryName) {
+            isUserTyping = false;
             const title = document.getElementById(`newTask_${tab}`).value.trim();
             const dueDate = document.getElementById(`newDate_${tab}`).value;
 
@@ -862,33 +887,52 @@
 
             saveTasks();
             displayTasks();
+            
+            // Restore focus and clear input after a moment
+            setTimeout(() => {
+                const newInput = document.getElementById(`newTask_${tab}`);
+                const newDate = document.getElementById(`newDate_${tab}`);
+                if (newInput) {
+                    newInput.value = '';
+                    newInput.focus();
+                }
+                if (newDate) {
+                    newDate.value = '';
+                }
+            }, 100);
         }
 
         function updateStatus(id, status) {
+            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.status = status;
                 saveTasks();
-                displayTasks();
             }
+            isUserTyping = false;
+            displayTasks();
         }
 
         function updateDate(id, date) {
+            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.dueDate = date;
                 saveTasks();
-                displayTasks();
             }
+            isUserTyping = false;
+            displayTasks();
         }
 
         function updateAssigned(id, assigned) {
+            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.assigned = assigned;
                 saveTasks();
-                displayTasks();
             }
+            isUserTyping = false;
+            displayTasks();
         }
 
         function deleteTask(id) {
@@ -1102,9 +1146,9 @@
                 })
                 .catch(e => console.log('Firebase not available - using local defaults'));
 
-            // Continuous sync every 5 seconds
+            // Continuous sync every 10 seconds (reduced from 5) and skip if user is typing
             setInterval(() => {
-                if (databaseURL) {
+                if (databaseURL && !isUserTyping) {
                     fetch(databaseURL + '/tasks.json')
                         .then(r => r.json())
                         .then(data => {
@@ -1114,7 +1158,7 @@
                                 // Only sync if Firebase has NEW format
                                 const isNewFormat = firebaseTasks.some(t => t.hasOwnProperty('assigned'));
                                 
-                                if (firebaseTasks.length > 0 && isNewFormat) {
+                                if (firebaseTasks.length > 0 && isNewFormat && !isUserTyping) {
                                     tasks = firebaseTasks;
                                     nextId = Math.max(...tasks.map(t => t.id || 0)) + 1;
                                     displayTasks();
@@ -1123,7 +1167,7 @@
                         })
                         .catch(e => null);
                 }
-            }, 5000);
+            }, 10000);
         });
     </script>
 </body>
