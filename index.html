@@ -99,6 +99,15 @@
             border-color: #667eea;
         }
 
+        .stat-progress {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            font-weight: 600;
+            padding-top: 8px;
+            border-top: 1px solid #f0f0f0;
+        }
+
         .stat-card.completed { border-left-color: #10b981; }
         .stat-card.in-progress { border-left-color: #f59e0b; }
         .stat-card.waiting { border-left-color: #8b5cf6; }
@@ -468,7 +477,7 @@
 
         <div class="content">
             <div style="text-align: right; padding: 10px 20px; border-bottom: 1px solid #e5e7eb;">
-                <button onclick="clearFirebase()" style="padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">🔄 Reset Firebase</button>
+                <button onclick="openSettings()" title="Advanced settings" style="padding: 6px 12px; background: transparent; color: #999; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s;" onmouseover="this.style.background='#f5f5f5'; this.style.color='#667eea';" onmouseout="this.style.background='transparent'; this.style.color='#999';">⚙️</button>
             </div>
 
             <!-- EDIT MODAL -->
@@ -495,6 +504,52 @@
                     </div>
                     <div class="modal-footer">
                         <button class="btn-modal btn-cancel" onclick="closeTaskListModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS MODAL -->
+            <div id="settingsModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">⚙️ Settings</div>
+                    <div class="modal-body">
+                        <div style="background: #fef2f2; padding: 15px; border-radius: 6px; border-left: 4px solid #dc2626; margin-bottom: 20px;">
+                            <div style="font-weight: 600; color: #dc2626; margin-bottom: 8px;">⚠️ Danger Zone</div>
+                            <div style="font-size: 13px; color: #666; line-height: 1.5;">
+                                This action will DELETE all Firebase data and reset with default tasks. This CANNOT be undone.
+                            </div>
+                        </div>
+                        <button onclick="openResetConfirm()" style="width: 100%; padding: 12px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">🔄 Clear Firebase Data</button>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeSettings()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESET CONFIRMATION MODAL -->
+            <div id="resetConfirmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header" style="color: #dc2626;">🚨 Confirm Reset</div>
+                    <div class="modal-body">
+                        <div style="background: #fee2e2; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #dc2626;">
+                            <div style="font-weight: 600; color: #991b1b; margin-bottom: 10px;">This will permanently delete ALL your data!</div>
+                            <div style="font-size: 13px; color: #991b1b; line-height: 1.6;">
+                                ✗ All tasks will be deleted<br/>
+                                ✗ All assignments will be removed<br/>
+                                ✗ All progress will be lost<br/>
+                                ✓ Default tasks will be restored<br/><br/>
+                                <strong>This action CANNOT be undone.</strong>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px;">Type "RESET" to confirm:</label>
+                            <input type="text" id="resetConfirmInput" placeholder="Type RESET here..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeResetConfirm()">Cancel</button>
+                        <button class="btn-modal" id="resetConfirmBtn" style="background: #dc2626; color: white; opacity: 0.5; cursor: not-allowed;" onclick="confirmReset()" disabled>Delete All Data</button>
                     </div>
                 </div>
             </div>
@@ -536,20 +591,24 @@
                     <div class="section-title">👥 Tasks by Assignee</div>
                     <div class="stats-row">
                         <div class="stat-card siva">
-                            <div class="stat-number" id="stat-siva">0</div>
+                            <div class="stat-number" id="stat-siva-progress" style="font-size: 32px; font-weight: 800; color: #667eea; margin: 5px 0;">0/0</div>
                             <div class="stat-label">👨 Siva</div>
+                            <div class="stat-progress" style="font-size: 11px; color: #999;">completed</div>
                         </div>
                         <div class="stat-card priya">
-                            <div class="stat-number" id="stat-priya">0</div>
+                            <div class="stat-number" id="stat-priya-progress" style="font-size: 32px; font-weight: 800; color: #667eea; margin: 5px 0;">0/0</div>
                             <div class="stat-label">👩 Priya</div>
+                            <div class="stat-progress" style="font-size: 11px; color: #999;">completed</div>
                         </div>
                         <div class="stat-card both">
-                            <div class="stat-number" id="stat-both">0</div>
+                            <div class="stat-number" id="stat-both-progress" style="font-size: 32px; font-weight: 800; color: #667eea; margin: 5px 0;">0/0</div>
                             <div class="stat-label">👥 Both</div>
+                            <div class="stat-progress" style="font-size: 11px; color: #999;">completed</div>
                         </div>
                         <div class="stat-card not-assigned">
-                            <div class="stat-number" id="stat-not-assigned">0</div>
+                            <div class="stat-number" id="stat-not-assigned-progress" style="font-size: 32px; font-weight: 800; color: #667eea; margin: 5px 0;">0/0</div>
                             <div class="stat-label">❓ Not Assigned</div>
+                            <div class="stat-progress" style="font-size: 11px; color: #999;">completed</div>
                         </div>
                     </div>
                 </div>
@@ -726,7 +785,11 @@
                 siva: tasks.filter(t => t.assigned === 'Siva').length,
                 priya: tasks.filter(t => t.assigned === 'Priya').length,
                 both: tasks.filter(t => t.assigned === 'Both').length,
-                'not-assigned': tasks.filter(t => !t.assigned || t.assigned === '').length
+                'not-assigned': tasks.filter(t => !t.assigned || t.assigned === '').length,
+                siva_completed: tasks.filter(t => t.assigned === 'Siva' && t.status === 'completed').length,
+                priya_completed: tasks.filter(t => t.assigned === 'Priya' && t.status === 'completed').length,
+                both_completed: tasks.filter(t => t.assigned === 'Both' && t.status === 'completed').length,
+                'not-assigned_completed': tasks.filter(t => (!t.assigned || t.assigned === '') && t.status === 'completed').length
             };
 
             document.getElementById('stat-completed').textContent = stats.completed;
@@ -747,17 +810,17 @@
             document.getElementById('stat-total').textContent = tasks.length;
             document.getElementById('stat-total').parentElement.onclick = () => showTasksByStatus('all', '📝 All Tasks');
             
-            document.getElementById('stat-siva').textContent = stats.siva;
-            document.getElementById('stat-siva').parentElement.onclick = () => showTasksByAssignee('Siva', '👨 Siva\'s Tasks');
+            document.getElementById('stat-siva-progress').textContent = `${stats.siva_completed}/${stats.siva}`;
+            document.getElementById('stat-siva-progress').parentElement.onclick = () => showTasksByAssignee('Siva', '👨 Siva\'s Tasks');
             
-            document.getElementById('stat-priya').textContent = stats.priya;
-            document.getElementById('stat-priya').parentElement.onclick = () => showTasksByAssignee('Priya', '👩 Priya\'s Tasks');
+            document.getElementById('stat-priya-progress').textContent = `${stats.priya_completed}/${stats.priya}`;
+            document.getElementById('stat-priya-progress').parentElement.onclick = () => showTasksByAssignee('Priya', '👩 Priya\'s Tasks');
             
-            document.getElementById('stat-both').textContent = stats.both;
-            document.getElementById('stat-both').parentElement.onclick = () => showTasksByAssignee('Both', '👥 Shared Tasks');
+            document.getElementById('stat-both-progress').textContent = `${stats.both_completed}/${stats.both}`;
+            document.getElementById('stat-both-progress').parentElement.onclick = () => showTasksByAssignee('Both', '👥 Shared Tasks');
             
-            document.getElementById('stat-not-assigned').textContent = stats['not-assigned'];
-            document.getElementById('stat-not-assigned').parentElement.onclick = () => showTasksByAssignee('', '❓ Not Assigned Tasks');
+            document.getElementById('stat-not-assigned-progress').textContent = `${stats['not-assigned_completed']}/${stats['not-assigned']}`;
+            document.getElementById('stat-not-assigned-progress').parentElement.onclick = () => showTasksByAssignee('', '❓ Not Assigned Tasks');
         }
 
         function displayTasks() {
@@ -903,36 +966,30 @@
         }
 
         function updateStatus(id, status) {
-            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.status = status;
                 saveTasks();
+                displayDashboard();  // Only update dashboard stats, not entire display
             }
-            isUserTyping = false;
-            displayTasks();
         }
 
         function updateDate(id, date) {
-            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.dueDate = date;
                 saveTasks();
+                displayDashboard();  // Only update dashboard stats, not entire display
             }
-            isUserTyping = false;
-            displayTasks();
         }
 
         function updateAssigned(id, assigned) {
-            isUserTyping = true;
             const task = tasks.find(t => t.id === id);
             if (task) {
                 task.assigned = assigned;
                 saveTasks();
+                displayDashboard();  // Only update dashboard stats, not entire display
             }
-            isUserTyping = false;
-            displayTasks();
         }
 
         function deleteTask(id) {
@@ -973,24 +1030,6 @@
                 displayTasks();
                 closeEditModal();
                 console.log('✅ Task updated:', newTitle);
-            }
-        }
-
-        function clearFirebase() {
-            if (confirm('🔄 This will DELETE all Firebase data and rebuild with fresh default tasks. Continue?')) {
-                fetch(databaseURL + '/tasks.json', {
-                    method: 'DELETE'
-                }).then(() => {
-                    console.log('✅ Firebase cleared');
-                    loadDefaultTasks();
-                    saveTasks();  // Save the fresh defaults to Firebase
-                    displayTasks();
-                    alert('✅ Firebase cleared and rebuilt with fresh data!');
-                    location.reload();  // Reload to refresh UI
-                }).catch(e => {
-                    console.log('Error clearing Firebase:', e);
-                    alert('Could not clear Firebase. Try manually via Firebase Console.');
-                });
             }
         }
 
@@ -1062,6 +1101,77 @@
             document.getElementById('taskListModal').classList.remove('active');
         }
 
+        function openSettings() {
+            document.getElementById('settingsModal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('active');
+        }
+
+        function openResetConfirm() {
+            document.getElementById('resetConfirmModal').classList.add('active');
+            document.getElementById('resetConfirmInput').value = '';
+            document.getElementById('resetConfirmBtn').disabled = true;
+            document.getElementById('resetConfirmBtn').style.opacity = '0.5';
+            document.getElementById('resetConfirmBtn').style.cursor = 'not-allowed';
+            document.getElementById('resetConfirmInput').focus();
+        }
+
+        function closeResetConfirm() {
+            document.getElementById('resetConfirmModal').classList.remove('active');
+            document.getElementById('resetConfirmInput').value = '';
+        }
+
+        // Enable reset button only if user types "RESET"
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'resetConfirmInput') {
+                const value = e.target.value.trim().toUpperCase();
+                const btn = document.getElementById('resetConfirmBtn');
+                
+                if (value === 'RESET') {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                } else {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            }
+        });
+
+        function confirmReset() {
+            const value = document.getElementById('resetConfirmInput').value.trim().toUpperCase();
+            
+            if (value !== 'RESET') {
+                alert('Please type "RESET" to confirm');
+                return;
+            }
+
+            clearFirebase();
+            closeResetConfirm();
+            closeSettings();
+        }
+
+        function clearFirebase() {
+            if (confirm('🔄 Last chance! This will DELETE all Firebase data and rebuild with default tasks. Are you absolutely sure?')) {
+                fetch(databaseURL + '/tasks.json', {
+                    method: 'DELETE'
+                }).then(() => {
+                    console.log('✅ Firebase cleared');
+                    loadDefaultTasks();
+                    saveTasks();  // Save the fresh defaults to Firebase
+                    displayTasks();
+                    alert('✅ Firebase cleared and rebuilt with fresh data!');
+                    location.reload();  // Reload to refresh UI
+                }).catch(e => {
+                    console.log('Error clearing Firebase:', e);
+                    alert('Could not clear Firebase. Try manually via Firebase Console.');
+                });
+            }
+        }
+
         function switchView(tab) {
             console.log('Switching to tab:', tab);
             
@@ -1107,6 +1217,8 @@
                 if (e.key === 'Escape') {
                     closeEditModal();
                     closeTaskListModal();
+                    closeSettings();
+                    closeResetConfirm();
                 }
             });
 
@@ -1114,12 +1226,20 @@
             document.addEventListener('click', function(e) {
                 const editModal = document.getElementById('editModal');
                 const taskListModal = document.getElementById('taskListModal');
+                const settingsModal = document.getElementById('settingsModal');
+                const resetConfirmModal = document.getElementById('resetConfirmModal');
                 
                 if (e.target === editModal) {
                     closeEditModal();
                 }
                 if (e.target === taskListModal) {
                     closeTaskListModal();
+                }
+                if (e.target === settingsModal) {
+                    closeSettings();
+                }
+                if (e.target === resetConfirmModal) {
+                    closeResetConfirm();
                 }
             });
             
