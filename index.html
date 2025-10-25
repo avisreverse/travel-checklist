@@ -472,8 +472,8 @@
             border-bottom: 1px solid #e5e7eb;
             padding: 15px;
             display: grid;
-            grid-template-columns: 40px 2fr 1fr 1fr 1fr 150px;
-            gap: 15px;
+            grid-template-columns: 40px minmax(200px, 2fr) 100px 100px 100px 120px 180px;
+            gap: 12px;
             align-items: center;
             transition: all 0.2s;
         }
@@ -694,8 +694,9 @@
             .btn-edit, .btn-delete { width: 100%; }
             .doc-grid { grid-template-columns: 1fr; }
             .doc-filters { grid-template-columns: 1fr; }
-            .doc-list-item { grid-template-columns: 40px 1fr 100px; font-size: 12px; }
+            .doc-list-item { grid-template-columns: 40px 1fr 120px; font-size: 12px; }
             .doc-list-item .doc-meta { display: none; }
+            .doc-list-item > div:nth-child(6) { display: none; } /* Hide expiration date on mobile */
         }
     </style>
 </head>
@@ -748,7 +749,10 @@
                             </select>
                         </div>
                         <div class="form-group" style="margin-bottom: 15px;">
-                            <label>Category</label>
+                            <label style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>Category</span>
+                                <button type="button" onclick="openCategoryManager()" style="background: transparent; border: none; color: #667eea; font-size: 11px; cursor: pointer; text-decoration: underline;">Manage Categories</button>
+                            </label>
                             <select id="docCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                                 <option value="">Select Category</option>
                                 <option value="Passport">🛂 Passport</option>
@@ -761,6 +765,15 @@
                                 <option value="Work">👔 Work</option>
                                 <option value="Other">📎 Other</option>
                             </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex-wrap: wrap;">
+                                <input type="checkbox" id="docHasExpiration" onchange="toggleExpirationDate()" style="cursor: pointer; flex-shrink: 0;">
+                                <span style="white-space: nowrap;">This document expires</span>
+                            </label>
+                            <div id="expirationDateField" style="display: none; margin-top: 8px;">
+                                <input type="date" id="docExpirationDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
                         </div>
                         <div id="uploadProgress" style="display: none;">
                             <div class="progress-bar">
@@ -863,6 +876,95 @@
                     <div class="modal-footer" style="margin-top: 15px;">
                         <button class="btn-modal btn-cancel" onclick="closeDocViewer()">Close</button>
                         <button class="btn-modal btn-save" onclick="downloadCurrentDoc()" id="downloadDocBtn">⬇️ Download</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EDIT DOCUMENT MODAL -->
+            <div id="editDocModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">✏️ Edit Document</div>
+                    <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Document Name</label>
+                            <input type="text" id="editDocName" placeholder="Document name..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Person</label>
+                            <select id="editDocPerson" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                                <option value="">Select Person</option>
+                                <option value="Siva">👨 Siva</option>
+                                <option value="Priya">👩 Priya</option>
+                                <option value="Akhil">👦 Akhil</option>
+                                <option value="Iniya">👧 Iniya</option>
+                                <option value="Family">👨‍👩‍👧‍👦 Family</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label>Category</label>
+                            <select id="editDocCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                                <!-- Categories will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex-wrap: wrap;">
+                                <input type="checkbox" id="editDocHasExpiration" onchange="toggleEditExpirationDate()" style="cursor: pointer; flex-shrink: 0;">
+                                <span style="white-space: nowrap;">This document expires</span>
+                            </label>
+                            <div id="editExpirationDateField" style="display: none; margin-top: 8px;">
+                                <input type="date" id="editDocExpirationDate" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeEditDocModal()">Cancel</button>
+                        <button class="btn-modal btn-save" onclick="saveDocEdit()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATEGORY MANAGER MODAL -->
+            <div id="categoryManagerModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">🏷️ Manage Categories</div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <label style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; display: block;">Add New Category</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="newCategoryName" placeholder="Category name..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                                <button onclick="addCustomCategory()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; white-space: nowrap;">➕ Add</button>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; display: block;">Default Categories</label>
+                            <div style="font-size: 12px; color: #999; background: #f9fafb; padding: 12px; border-radius: 6px; line-height: 1.8;">
+                                🛂 Passport | 📋 Visa | 🎫 Tickets | ⚕️ Medical | 🏥 Insurance | 💳 Financial | 📚 School | 👔 Work | 📎 Other
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size: 13px; font-weight: 600; color: #666; margin-bottom: 8px; display: block;">Custom Categories</label>
+                            <div id="customCategoriesList" style="max-height: 200px; overflow-y: auto;">
+                                <!-- Custom categories will be listed here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeCategoryManager()">Close</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOCUMENT LIST MODAL -->
+            <div id="documentListModal" class="modal">
+                <div class="modal-content large">
+                    <div class="modal-header" id="documentListTitle">📂 Documents</div>
+                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                        <div id="documentListContent">
+                            <!-- Documents will be displayed here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-cancel" onclick="closeDocumentListModal()">Close</button>
                     </div>
                 </div>
             </div>
@@ -993,6 +1095,34 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Document Expiration Dashboard -->
+                <div class="dashboard-section">
+                    <div class="section-title">📄 Document Expiration Status</div>
+                    <div class="stats-row">
+                        <div class="stat-card" style="border-left-color: #dc2626; cursor: pointer;" onclick="showDocumentsByExpiration('expired', '🔴 Expired Documents')">
+                            <div class="stat-number" id="stat-doc-expired">0</div>
+                            <div class="stat-label">🔴 Expired</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color: #f59e0b; cursor: pointer;" onclick="showDocumentsByExpiration('expiring-soon', '⚠️ Documents Expiring Soon')">
+                            <div class="stat-number" id="stat-doc-expiring-soon">0</div>
+                            <div class="stat-label">⚠️ Expiring Soon</div>
+                            <div class="stat-progress">within 30 days</div>
+                        </div>
+                        <div class="stat-card" style="border-left-color: #10b981; cursor: pointer;" onclick="showDocumentsByExpiration('valid', '✅ Valid Documents')">
+                            <div class="stat-number" id="stat-doc-valid">0</div>
+                            <div class="stat-label">✅ Valid</div>
+                        </div>
+                        <div class="stat-card" style="cursor: pointer;" onclick="showDocumentsByExpiration('no-expiration', '📝 Documents Without Expiration')">
+                            <div class="stat-number" id="stat-doc-no-expiration">0</div>
+                            <div class="stat-label">📝 No Expiration</div>
+                        </div>
+                        <div class="stat-card" style="cursor: pointer;" onclick="showDocumentsByExpiration('all', '📂 All Documents')">
+                            <div class="stat-number" id="stat-doc-total">0</div>
+                            <div class="stat-label">📂 Total Docs</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- CATEGORIES -->
@@ -1019,6 +1149,8 @@
         let currentViewMode = 'grid';
         let currentDocData = null;
         let currentDocFileName = null;
+        let customCategories = [];
+        let editingDocId = null;
 
         const categoryMap = {
             'critical': '🔴 CRITICAL - DO THIS FIRST',
@@ -1032,6 +1164,79 @@
             'packing': '🎒 PACKING CHECKLIST',
             'final': '✅ FINAL PREPARATIONS'
         };
+
+        const defaultCategories = [
+            {value: 'Passport', label: '🛂 Passport'},
+            {value: 'Visa', label: '📋 Visa'},
+            {value: 'Tickets', label: '🎫 Tickets'},
+            {value: 'Medical', label: '⚕️ Medical'},
+            {value: 'Insurance', label: '🏥 Insurance'},
+            {value: 'Financial', label: '💳 Financial'},
+            {value: 'School', label: '📚 School'},
+            {value: 'Work', label: '👔 Work'},
+            {value: 'Other', label: '📎 Other'}
+        ];
+
+        // ==================== HELPER FUNCTIONS ====================
+
+        function calculateDaysUntilExpiration(expirationDate) {
+            if (!expirationDate) return null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const expDate = new Date(expirationDate);
+            expDate.setHours(0, 0, 0, 0);
+            const diffTime = expDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function getExpirationLabel(expirationDate) {
+            if (!expirationDate) return null;
+            const days = calculateDaysUntilExpiration(expirationDate);
+
+            if (days < 0) {
+                const absDays = Math.abs(days);
+                return {
+                    text: `Expired ${absDays} day${absDays !== 1 ? 's' : ''} ago`,
+                    color: '#dc2626',
+                    bgColor: '#fee2e2',
+                    status: 'expired'
+                };
+            } else if (days === 0) {
+                return {
+                    text: 'Expires today',
+                    color: '#dc2626',
+                    bgColor: '#fee2e2',
+                    status: 'expired'
+                };
+            } else if (days <= 30) {
+                return {
+                    text: `Expires in ${days} day${days !== 1 ? 's' : ''}`,
+                    color: '#f59e0b',
+                    bgColor: '#fef3c7',
+                    status: 'expiring-soon'
+                };
+            } else {
+                return {
+                    text: `Expires in ${days} days`,
+                    color: '#10b981',
+                    bgColor: '#d1fae5',
+                    status: 'valid'
+                };
+            }
+        }
+
+        function toggleExpirationDate() {
+            const checkbox = document.getElementById('docHasExpiration');
+            const field = document.getElementById('expirationDateField');
+            field.style.display = checkbox.checked ? 'block' : 'none';
+        }
+
+        function toggleEditExpirationDate() {
+            const checkbox = document.getElementById('editDocHasExpiration');
+            const field = document.getElementById('editExpirationDateField');
+            field.style.display = checkbox.checked ? 'block' : 'none';
+        }
 
         // ==================== DOCUMENT MANAGEMENT ====================
 
@@ -1065,7 +1270,11 @@
             document.getElementById('docName').value = selectedFiles.length === 1 ? selectedFiles[0].name : `${selectedFiles.length} files`;
             document.getElementById('docPerson').value = '';
             document.getElementById('docCategory').value = '';
+            document.getElementById('docHasExpiration').checked = false;
+            document.getElementById('docExpirationDate').value = '';
+            document.getElementById('expirationDateField').style.display = 'none';
             document.getElementById('uploadProgress').style.display = 'none';
+            populateCategoryDropdown('docCategory');
         }
 
         function closeUploadModal() {
@@ -1078,9 +1287,16 @@
             const docName = document.getElementById('docName').value.trim();
             const person = document.getElementById('docPerson').value;
             const category = document.getElementById('docCategory').value;
+            const hasExpiration = document.getElementById('docHasExpiration').checked;
+            const expirationDate = hasExpiration ? document.getElementById('docExpirationDate').value : null;
 
             if (!docName || !person || !category) {
                 alert('Please fill in all fields');
+                return;
+            }
+
+            if (hasExpiration && !expirationDate) {
+                alert('Please select an expiration date or uncheck the expiration option');
                 return;
             }
 
@@ -1089,11 +1305,11 @@
                 return;
             }
 
-            // Check file size limit (10MB per file for Realtime Database)
-            const maxSize = 10 * 1024 * 1024; // 10MB
+            // Check file size limit (7MB per file - base64 encoding adds ~33% overhead, keeping total under 10MB Firebase limit)
+            const maxSize = 7 * 1024 * 1024; // 7MB
             for (let file of selectedFiles) {
                 if (file.size > maxSize) {
-                    alert(`File "${file.name}" is too large. Maximum size is 10MB.`);
+                    alert(`File "${file.name}" is too large. Maximum size is 7MB.\n\n(Files are encoded in base64 which increases size by ~33%. The 7MB limit ensures the encoded file stays under Firebase's 10MB limit.)`);
                     return;
                 }
             }
@@ -1126,6 +1342,7 @@
                         person: person,
                         category: category,
                         uploadDate: new Date().toISOString(),
+                        expirationDate: expirationDate,
                         fileData: base64Data
                     };
 
@@ -1199,10 +1416,39 @@
                 }
 
                 filterDocuments();
+                updateDocumentExpirationStats();
                 console.log('✅ Loaded', allDocuments.length, 'documents');
             } catch (error) {
                 console.error('Load documents error:', error);
             }
+        }
+
+        function updateDocumentExpirationStats() {
+            let expired = 0;
+            let expiringSoon = 0;
+            let valid = 0;
+            let noExpiration = 0;
+
+            allDocuments.forEach(doc => {
+                if (!doc.expirationDate) {
+                    noExpiration++;
+                } else {
+                    const label = getExpirationLabel(doc.expirationDate);
+                    if (label.status === 'expired') {
+                        expired++;
+                    } else if (label.status === 'expiring-soon') {
+                        expiringSoon++;
+                    } else if (label.status === 'valid') {
+                        valid++;
+                    }
+                }
+            });
+
+            document.getElementById('stat-doc-expired').textContent = expired;
+            document.getElementById('stat-doc-expiring-soon').textContent = expiringSoon;
+            document.getElementById('stat-doc-valid').textContent = valid;
+            document.getElementById('stat-doc-no-expiration').textContent = noExpiration;
+            document.getElementById('stat-doc-total').textContent = allDocuments.length;
         }
 
         function filterDocuments() {
@@ -1239,10 +1485,18 @@
             if (currentViewMode === 'grid') {
                 let html = '<div class="doc-grid">';
                 docs.forEach(doc => {
+                    const expirationLabel = getExpirationLabel(doc.expirationDate);
+                    const isExpired = expirationLabel && expirationLabel.status === 'expired';
+
                     html += `
-                        <div class="doc-card">
+                        <div class="doc-card" style="${isExpired ? 'border-left-color: #dc2626; background: #fef2f2;' : ''}">
                             <div class="doc-icon">${getFileIcon(doc.fileType)}</div>
                             <div class="doc-name">${doc.name}</div>
+                            ${expirationLabel ? `
+                                <div style="margin: 8px 0; padding: 6px 10px; border-radius: 4px; font-size: 11px; font-weight: 600; background: ${expirationLabel.bgColor}; color: ${expirationLabel.color}; text-align: center;">
+                                    ${expirationLabel.text}
+                                </div>
+                            ` : ''}
                             <div class="doc-meta">
                                 <span>👤 ${doc.person}</span>
                                 <span>🏷️ ${doc.category}</span>
@@ -1253,7 +1507,8 @@
                             </div>
                             <div class="doc-actions">
                                 <button class="doc-btn view" onclick="viewDocument('${doc.id}', '${doc.fileName}')">👁️ View</button>
-                                <button class="doc-btn delete" onclick="deleteDocument('${doc.id}')">🗑️ Delete</button>
+                                <button class="doc-btn" style="background: #e0e7ff; color: #667eea;" onclick="openEditDocModal('${doc.id}')">✏️ Edit</button>
+                                <button class="doc-btn delete" onclick="deleteDocument('${doc.id}')">🗑️</button>
                             </div>
                         </div>
                     `;
@@ -1263,15 +1518,31 @@
             } else {
                 let html = '<div class="doc-list">';
                 docs.forEach(doc => {
+                    const expirationLabel = getExpirationLabel(doc.expirationDate);
+                    const isExpired = expirationLabel && expirationLabel.status === 'expired';
+
                     html += `
-                        <div class="doc-list-item">
+                        <div class="doc-list-item" style="${isExpired ? 'background: #fef2f2;' : ''}">
                             <div style="text-align: center; font-size: 24px;">${getFileIcon(doc.fileType)}</div>
-                            <div style="font-weight: 600; color: #1a1a1a;">${doc.name}</div>
+                            <div>
+                                <div style="font-weight: 600; color: #1a1a1a; margin-bottom: 4px;">${doc.name}</div>
+                                ${expirationLabel ? `
+                                    <div style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${expirationLabel.bgColor}; color: ${expirationLabel.color};">
+                                        ${expirationLabel.text}
+                                    </div>
+                                ` : ''}
+                            </div>
                             <div class="doc-meta"><span>👤 ${doc.person}</span></div>
                             <div class="doc-meta"><span>🏷️ ${doc.category}</span></div>
                             <div class="doc-meta"><span>📦 ${formatFileSize(doc.fileSize)}</span></div>
+                            <div style="font-size: 12px;">
+                                ${doc.expirationDate ? `
+                                    <div style="font-weight: 600; color: ${expirationLabel ? expirationLabel.color : '#666'};">📅 ${new Date(doc.expirationDate).toLocaleDateString()}</div>
+                                ` : `<span style="color: #999;">No expiry</span>`}
+                            </div>
                             <div style="display: flex; gap: 8px;">
                                 <button class="doc-btn view" onclick="viewDocument('${doc.id}', '${doc.fileName}')">👁️ View</button>
+                                <button class="doc-btn" style="background: #e0e7ff; color: #667eea;" onclick="openEditDocModal('${doc.id}')">✏️</button>
                                 <button class="doc-btn delete" onclick="deleteDocument('${doc.id}')">🗑️</button>
                             </div>
                         </div>
@@ -1396,6 +1667,323 @@
                 console.error('Delete error:', error);
                 alert('Failed to delete document: ' + error.message);
             }
+        }
+
+        // ==================== EDIT DOCUMENT ====================
+
+        async function openEditDocModal(docId) {
+            try {
+                const snapshot = await window.firebaseGet(
+                    window.firebaseDbRef(window.firebaseDatabase, 'documents/' + docId)
+                );
+
+                if (snapshot.exists()) {
+                    const doc = snapshot.val();
+                    editingDocId = docId;
+
+                    document.getElementById('editDocName').value = doc.name;
+                    document.getElementById('editDocPerson').value = doc.person;
+                    populateCategoryDropdown('editDocCategory');
+                    document.getElementById('editDocCategory').value = doc.category;
+
+                    if (doc.expirationDate) {
+                        document.getElementById('editDocHasExpiration').checked = true;
+                        document.getElementById('editDocExpirationDate').value = doc.expirationDate;
+                        document.getElementById('editExpirationDateField').style.display = 'block';
+                    } else {
+                        document.getElementById('editDocHasExpiration').checked = false;
+                        document.getElementById('editDocExpirationDate').value = '';
+                        document.getElementById('editExpirationDateField').style.display = 'none';
+                    }
+
+                    document.getElementById('editDocModal').classList.add('active');
+                }
+            } catch (error) {
+                console.error('Error opening edit modal:', error);
+                alert('Failed to load document: ' + error.message);
+            }
+        }
+
+        function closeEditDocModal() {
+            document.getElementById('editDocModal').classList.remove('active');
+            editingDocId = null;
+        }
+
+        async function saveDocEdit() {
+            if (!editingDocId) return;
+
+            const name = document.getElementById('editDocName').value.trim();
+            const person = document.getElementById('editDocPerson').value;
+            const category = document.getElementById('editDocCategory').value;
+            const hasExpiration = document.getElementById('editDocHasExpiration').checked;
+            const expirationDate = hasExpiration ? document.getElementById('editDocExpirationDate').value : null;
+
+            if (!name || !person || !category) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (hasExpiration && !expirationDate) {
+                alert('Please select an expiration date or uncheck the expiration option');
+                return;
+            }
+
+            try {
+                const snapshot = await window.firebaseGet(
+                    window.firebaseDbRef(window.firebaseDatabase, 'documents/' + editingDocId)
+                );
+
+                if (snapshot.exists()) {
+                    const doc = snapshot.val();
+                    doc.name = name;
+                    doc.person = person;
+                    doc.category = category;
+                    doc.expirationDate = expirationDate;
+
+                    await window.firebaseSet(
+                        window.firebaseDbRef(window.firebaseDatabase, 'documents/' + editingDocId),
+                        doc
+                    );
+
+                    console.log('✅ Document updated');
+                    closeEditDocModal();
+                    loadDocuments();
+                }
+            } catch (error) {
+                console.error('Error updating document:', error);
+                alert('Failed to update document: ' + error.message);
+            }
+        }
+
+        // ==================== CATEGORY MANAGEMENT ====================
+
+        async function loadCustomCategories() {
+            try {
+                const snapshot = await window.firebaseGet(
+                    window.firebaseDbRef(window.firebaseDatabase, 'customCategories')
+                );
+
+                if (snapshot.exists()) {
+                    customCategories = Object.values(snapshot.val());
+                } else {
+                    customCategories = [];
+                }
+            } catch (error) {
+                console.error('Error loading custom categories:', error);
+                customCategories = [];
+            }
+        }
+
+        async function saveCustomCategories() {
+            try {
+                const categoriesObj = {};
+                customCategories.forEach((cat, index) => {
+                    categoriesObj[index] = cat;
+                });
+
+                await window.firebaseSet(
+                    window.firebaseDbRef(window.firebaseDatabase, 'customCategories'),
+                    categoriesObj
+                );
+            } catch (error) {
+                console.error('Error saving custom categories:', error);
+            }
+        }
+
+        function populateCategoryDropdown(selectId) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+
+            select.innerHTML = '<option value="">Select Category</option>';
+
+            // Add default categories
+            defaultCategories.forEach(cat => {
+                select.innerHTML += `<option value="${cat.value}">${cat.label}</option>`;
+            });
+
+            // Add custom categories
+            customCategories.forEach(cat => {
+                select.innerHTML += `<option value="${cat}">${cat}</option>`;
+            });
+
+            select.value = currentValue;
+        }
+
+        function openCategoryManager() {
+            document.getElementById('categoryManagerModal').classList.add('active');
+            displayCustomCategories();
+        }
+
+        function closeCategoryManager() {
+            document.getElementById('categoryManagerModal').classList.remove('active');
+            populateCategoryDropdown('docCategory');
+        }
+
+        function displayCustomCategories() {
+            const container = document.getElementById('customCategoriesList');
+
+            if (customCategories.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999; font-size: 12px;">No custom categories yet</div>';
+                return;
+            }
+
+            let html = '';
+            customCategories.forEach((cat, index) => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9fafb; border-radius: 6px; margin-bottom: 8px;">
+                        <span style="font-weight: 600; color: #1a1a1a;">${cat}</span>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="editCustomCategory(${index})" style="padding: 4px 8px; background: #e0e7ff; color: #667eea; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">Edit</button>
+                            <button onclick="deleteCustomCategory(${index}, '${cat}')" style="padding: 4px 8px; background: #fee2e2; color: #dc2626; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function addCustomCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+
+            if (!name) {
+                alert('Please enter a category name');
+                return;
+            }
+
+            // Check if already exists
+            if (customCategories.includes(name) || defaultCategories.some(c => c.value === name)) {
+                alert('This category already exists');
+                return;
+            }
+
+            customCategories.push(name);
+            await saveCustomCategories();
+            document.getElementById('newCategoryName').value = '';
+            displayCustomCategories();
+            console.log('✅ Category added:', name);
+        }
+
+        async function editCustomCategory(index) {
+            const currentName = customCategories[index];
+            const newName = prompt('Edit category name:', currentName);
+
+            if (!newName || newName.trim() === '') return;
+
+            const trimmedName = newName.trim();
+
+            // Check if already exists
+            if (trimmedName !== currentName && (customCategories.includes(trimmedName) || defaultCategories.some(c => c.value === trimmedName))) {
+                alert('This category name already exists');
+                return;
+            }
+
+            // Update documents using this category
+            const docsToUpdate = allDocuments.filter(doc => doc.category === currentName);
+            for (const doc of docsToUpdate) {
+                doc.category = trimmedName;
+                await window.firebaseSet(
+                    window.firebaseDbRef(window.firebaseDatabase, 'documents/' + doc.id),
+                    doc
+                );
+            }
+
+            customCategories[index] = trimmedName;
+            await saveCustomCategories();
+            displayCustomCategories();
+            loadDocuments();
+            console.log('✅ Category renamed:', currentName, '→', trimmedName);
+        }
+
+        async function deleteCustomCategory(index, categoryName) {
+            // Check if any documents use this category
+            const docsUsingCategory = allDocuments.filter(doc => doc.category === categoryName);
+
+            if (docsUsingCategory.length > 0) {
+                alert(`Cannot delete category "${categoryName}" because ${docsUsingCategory.length} document(s) are using it. Please reassign those documents first.`);
+                return;
+            }
+
+            if (!confirm(`Delete category "${categoryName}"?`)) return;
+
+            customCategories.splice(index, 1);
+            await saveCustomCategories();
+            displayCustomCategories();
+            console.log('✅ Category deleted:', categoryName);
+        }
+
+        // ==================== DOCUMENT LIST MODAL ====================
+
+        function showDocumentsByExpiration(status, title) {
+            let filteredDocs = [];
+
+            if (status === 'all') {
+                filteredDocs = allDocuments;
+            } else if (status === 'no-expiration') {
+                filteredDocs = allDocuments.filter(doc => !doc.expirationDate);
+            } else {
+                filteredDocs = allDocuments.filter(doc => {
+                    if (!doc.expirationDate) return false;
+                    const label = getExpirationLabel(doc.expirationDate);
+                    return label && label.status === status;
+                });
+            }
+
+            displayDocumentListModal(filteredDocs, title);
+        }
+
+        function displayDocumentListModal(docs, title) {
+            document.getElementById('documentListTitle').textContent = `${title} (${docs.length})`;
+            const container = document.getElementById('documentListContent');
+
+            if (docs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #999; margin-bottom: 8px;">No Documents Found</div>
+                    </div>
+                `;
+            } else {
+                let html = '<div class="doc-list">';
+                docs.forEach(doc => {
+                    const expirationLabel = getExpirationLabel(doc.expirationDate);
+                    const isExpired = expirationLabel && expirationLabel.status === 'expired';
+
+                    html += `
+                        <div class="doc-list-item" style="${isExpired ? 'background: #fef2f2;' : ''}">
+                            <div style="text-align: center; font-size: 24px;">${getFileIcon(doc.fileType)}</div>
+                            <div>
+                                <div style="font-weight: 600; color: #1a1a1a; margin-bottom: 4px;">${doc.name}</div>
+                                ${expirationLabel ? `
+                                    <div style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${expirationLabel.bgColor}; color: ${expirationLabel.color};">
+                                        ${expirationLabel.text}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="doc-meta"><span>👤 ${doc.person}</span></div>
+                            <div class="doc-meta"><span>🏷️ ${doc.category}</span></div>
+                            <div class="doc-meta"><span>📦 ${formatFileSize(doc.fileSize)}</span></div>
+                            <div style="font-size: 12px;">
+                                ${doc.expirationDate ? `
+                                    <div style="font-weight: 600; color: ${expirationLabel ? expirationLabel.color : '#666'};">📅 ${new Date(doc.expirationDate).toLocaleDateString()}</div>
+                                ` : `<span style="color: #999;">No expiry</span>`}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="doc-btn view" onclick="viewDocument('${doc.id}', '${doc.fileName}')">👁️ View</button>
+                                <button class="doc-btn" style="background: #e0e7ff; color: #667eea;" onclick="openEditDocModal('${doc.id}')">✏️</button>
+                                <button class="doc-btn delete" onclick="deleteDocument('${doc.id}')">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            document.getElementById('documentListModal').classList.add('active');
+        }
+
+        function closeDocumentListModal() {
+            document.getElementById('documentListModal').classList.remove('active');
         }
 
         // ==================== TASK MANAGEMENT ====================
@@ -1957,6 +2545,9 @@
                     closeResetConfirm();
                     closeUploadModal();
                     closeDocViewer();
+                    closeEditDocModal();
+                    closeCategoryManager();
+                    closeDocumentListModal();
                 }
             });
 
@@ -1967,6 +2558,9 @@
                 const resetConfirmModal = document.getElementById('resetConfirmModal');
                 const uploadModal = document.getElementById('uploadModal');
                 const docViewerModal = document.getElementById('docViewerModal');
+                const editDocModal = document.getElementById('editDocModal');
+                const categoryManagerModal = document.getElementById('categoryManagerModal');
+                const documentListModal = document.getElementById('documentListModal');
 
                 if (e.target === editModal) closeEditModal();
                 if (e.target === taskListModal) closeTaskListModal();
@@ -1974,7 +2568,13 @@
                 if (e.target === resetConfirmModal) closeResetConfirm();
                 if (e.target === uploadModal) closeUploadModal();
                 if (e.target === docViewerModal) closeDocViewer();
+                if (e.target === editDocModal) closeEditDocModal();
+                if (e.target === categoryManagerModal) closeCategoryManager();
+                if (e.target === documentListModal) closeDocumentListModal();
             });
+
+            // Load custom categories
+            loadCustomCategories();
 
             fetch(databaseURL + '/tasks.json')
                 .then(r => r.json())
