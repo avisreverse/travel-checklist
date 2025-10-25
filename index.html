@@ -1291,6 +1291,8 @@
 
         async function viewDocument(docId, fileName) {
             try {
+                console.log('Opening document:', docId, fileName);
+
                 // Get document from database
                 const snapshot = await window.firebaseGet(
                     window.firebaseDbRef(window.firebaseDatabase, 'documents/' + docId)
@@ -1301,17 +1303,24 @@
                     currentDocData = doc.fileData;
                     currentDocFileName = fileName;
 
+                    console.log('Document loaded:', doc.name, 'Type:', doc.fileType, 'Size:', doc.fileSize);
+
                     // Display document in modal
                     const content = document.getElementById('docViewerContent');
                     document.getElementById('docViewerTitle').textContent = `📄 ${doc.name}`;
 
                     // Display based on file type
                     if (doc.fileType === 'pdf') {
-                        content.innerHTML = `<embed src="${doc.fileData}" type="application/pdf" width="100%" height="100%" />`;
+                        console.log('Rendering PDF');
+                        content.innerHTML = `
+                            <iframe src="${doc.fileData}" width="100%" height="100%" style="border: none;" title="${doc.name}"></iframe>
+                        `;
                     } else if (doc.fileType === 'image') {
+                        console.log('Rendering Image');
                         content.innerHTML = `<img src="${doc.fileData}" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="${doc.name}" />`;
                     } else if (doc.fileType === 'doc') {
-                        // For documents, try iframe first, fallback to download option
+                        console.log('Document type - showing download option');
+                        // For documents, show download option
                         content.innerHTML = `
                             <div style="text-align: center; padding: 40px;">
                                 <div style="font-size: 48px; margin-bottom: 20px;">${getFileIcon(doc.fileType)}</div>
@@ -1324,22 +1333,28 @@
                             </div>
                         `;
                     } else {
-                        // For other file types, show download option
+                        console.log('Other file type - attempting to display:', doc.fileType);
+                        // For other file types, try to display in iframe or show download option
                         content.innerHTML = `
                             <div style="text-align: center; padding: 40px;">
                                 <div style="font-size: 48px; margin-bottom: 20px;">${getFileIcon(doc.fileType)}</div>
                                 <div style="font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 10px;">${doc.name}</div>
-                                <div style="font-size: 13px; color: #666; margin-bottom: 20px;">
-                                    Preview not available for this file type.<br/>
-                                    Click Download to view the file.
+                                <div style="font-size: 13px; color: #666; margin-bottom: 15px;">
+                                    File: ${fileName}<br/>
+                                    Type: ${doc.fileType}<br/>
+                                    Size: ${formatFileSize(doc.fileSize)}
                                 </div>
-                                <button onclick="downloadCurrentDoc()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">⬇️ Download File</button>
+                                <div style="display: flex; gap: 10px; justify-content: center;">
+                                    <button onclick="downloadCurrentDoc()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">⬇️ Download</button>
+                                    <button onclick="window.open(currentDocData, '_blank')" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">🔗 Open in New Tab</button>
+                                </div>
                             </div>
                         `;
                     }
 
                     // Open modal
                     document.getElementById('docViewerModal').classList.add('active');
+                    console.log('Modal opened');
                 } else {
                     alert('Document not found');
                 }
